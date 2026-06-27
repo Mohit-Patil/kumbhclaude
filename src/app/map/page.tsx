@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { Mark } from "@/components/brand";
-import { getMapReports } from "@/lib/queries";
+import { getMapReports, getBooths } from "@/lib/queries";
 import { OperatorMap } from "@/components/map/OperatorMap";
 
 export const dynamic = "force-dynamic";
 
 export default async function MapPage() {
-  const { missing, found } = await getMapReports();
+  const [{ missing, found }, booths] = await Promise.all([getMapReports(), getBooths()]);
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   return (
@@ -27,7 +27,7 @@ export default async function MapPage() {
           <div className="cell">
             <div className="k">On map</div>
             <div className="v mono">
-              {missing.length} missing · {found.length} found
+              {missing.length} missing · {found.length} found · {booths.length} booths
             </div>
           </div>
           <Link href="/dashboard" className="titlechip" style={{ textDecoration: "none" }}>
@@ -36,7 +36,7 @@ export default async function MapPage() {
         </div>
       </header>
 
-      <OperatorMap missing={missing} found={found} apiKey={apiKey} />
+      <OperatorMap missing={missing} found={found} booths={booths} apiKey={apiKey} />
     </div>
   );
 }

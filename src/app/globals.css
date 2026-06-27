@@ -1373,6 +1373,19 @@ a {
   font-size: 11.5px;
   color: var(--ink-faint);
 }
+/* Help-booth marker — small marigold tent, distinct from report/police pins */
+.booth-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: var(--marigold-deep, #c97d00);
+  border: 1.5px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  transform: translateY(-2px);
+}
 .map-list {
   display: flex;
   flex-direction: column;

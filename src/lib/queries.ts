@@ -382,6 +382,46 @@ export async function getMapReports(): Promise<{ missing: MapReport[]; found: Ma
   return { missing, found };
 }
 
+export type BoothPin = {
+  id: string;
+  code: string | null;
+  name: string;
+  zone: string | null;
+  lat: number;
+  lng: number;
+  phone: string | null;
+};
+
+type BoothRow = {
+  booth_id: string;
+  code: string | null;
+  name: string | null;
+  zone: string | null;
+  lat: number | null;
+  lng: number | null;
+  contact_phone: string | null;
+};
+
+/** All help booths with a plottable location, for the operator map. */
+export async function getBooths(): Promise<BoothPin[]> {
+  const { data } = await supabase
+    .from("booth")
+    .select("booth_id,code,name,zone,lat,lng,contact_phone")
+    .order("code");
+
+  return ((data ?? []) as unknown as BoothRow[])
+    .filter((b) => b.lat != null && b.lng != null)
+    .map((b) => ({
+      id: b.booth_id,
+      code: b.code,
+      name: b.name ?? "Help booth",
+      zone: b.zone,
+      lat: b.lat!,
+      lng: b.lng!,
+      phone: b.contact_phone,
+    }));
+}
+
 export async function getDashboardData() {
   const [stats, missingQueue, foundQueue, matches, reunited] = await Promise.all([
     getStats(),
