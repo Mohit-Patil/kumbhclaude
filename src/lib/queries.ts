@@ -28,6 +28,17 @@ export type ReunitedItem = {
   via: string;
   ago: string;
 };
+export type MapReport = {
+  id: string;
+  kind: "missing" | "found";
+  lat: number;
+  lng: number;
+  label: string;
+  meta: string;
+  boothCode: string | null;
+  zone: string | null;
+  ago: string;
+};
 
 /* ---------- raw embedded row shapes ---------- */
 type PersonLite = {
@@ -37,6 +48,12 @@ type PersonLite = {
   description: string | null;
 };
 type BoothLite = { code: string | null; zone: string | null };
+type BoothGeo = {
+  code: string | null;
+  zone: string | null;
+  lat: number | null;
+  lng: number | null;
+};
 type MissingRow = {
   missing_report_id: string;
   last_seen_to: string | null;
@@ -187,6 +204,78 @@ export async function getReunited(): Promise<ReunitedItem[]> {
     via: `${r.match_method === "aadhaar" ? "Aadhaar" : "Face"} match${r.missing?.booth?.code ? ` · Booth ${r.missing.booth.code}` : ""}`,
     ago: timeAgo(r.resolved_at),
   }));
+}
+
+type MapMissingRow = {
+  missing_report_id: string;
+  last_seen_to: string | null;
+  created_at: string;
+  booth: BoothGeo | null;
+  subject: PersonLite | null;
+};
+type MapFoundRow = {
+  found_report_id: string;
+  found_at: string | null;
+  created_at: string;
+  booth: BoothGeo | null;
+  subject: PersonLite | null;
+};
+
+/**
+ * Open missing/found reports placed on the map via their booth's coordinates.
+ * Reports whose booth has no location are omitted (the map can't plot them).
+ */
+export async function getMapReports(): Promise<{ missing: MapReport[]; found: MapReport[] }> {
+  const [missingRes, foundRes] = await Promise.all([
+    supabase
+      .from("missing_report")
+      .select(
+        "missing_report_id,last_seen_to,created_at,booth:booth!missing_report_booth_id_fkey(code,zone,lat,lng),subject:person!missing_report_subject_person_id_fkey(full_name,age,age_range,description)",
+      )
+      .eq("status", "open"),
+    supabase
+      .from("found_report")
+      .select(
+        "found_report_id,found_at,created_at,booth:booth!found_report_booth_id_fkey(code,zone,lat,lng),subject:person!found_report_subject_person_id_fkey(full_name,age,age_range,description)",
+      )
+      .eq("status", "open"),
+  ]);
+
+  const missing = ((missingRes.data ?? []) as unknown as MapMissingRow[])
+    .filter((r) => r.booth?.lat != null && r.booth?.lng != null)
+    .map(
+      (r): MapReport => ({
+        id: r.missing_report_id,
+        kind: "missing",
+        lat: r.booth!.lat!,
+        lng: r.booth!.lng!,
+        label: personLabel(r.subject),
+        meta: [r.booth?.zone, r.subject?.description].filter(Boolean).join(" · "),
+        boothCode: r.booth?.code ?? null,
+        zone: r.booth?.zone ?? null,
+        ago: timeAgo(r.last_seen_to ?? r.created_at),
+      }),
+    );
+
+  const found = ((foundRes.data ?? []) as unknown as MapFoundRow[])
+    .filter((r) => r.booth?.lat != null && r.booth?.lng != null)
+    .map(
+      (r): MapReport => ({
+        id: r.found_report_id,
+        kind: "found",
+        lat: r.booth!.lat!,
+        lng: r.booth!.lng!,
+        label: displayName(r.subject),
+        meta: [r.booth?.code ? `Booth ${r.booth.code}` : null, r.subject?.description]
+          .filter(Boolean)
+          .join(" · "),
+        boothCode: r.booth?.code ?? null,
+        zone: r.booth?.zone ?? null,
+        ago: timeAgo(r.found_at ?? r.created_at),
+      }),
+    );
+
+  return { missing, found };
 }
 
 export async function getDashboardData() {
