@@ -1,17 +1,11 @@
 import { AgentBand } from "@/components/brand";
 import { Avatar } from "@/components/avatar";
 import { getCandidateMatches } from "@/lib/queries";
+import LocationField from "./LocationField";
+import { fileMissingReport } from "./actions";
+import { PhotoCapture } from "@/components/photo-capture";
 
 export const dynamic = "force-dynamic";
-
-function Pin({ color = "#D33A2C" }: { color?: string }) {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0116 0z" fill={color} />
-      <circle cx="12" cy="10" r="3" fill="#fff" />
-    </svg>
-  );
-}
 
 export default async function ReportMissing() {
   const matches = await getCandidateMatches();
@@ -21,7 +15,7 @@ export default async function ReportMissing() {
       <AgentBand title="Report missing" titleHi="गुमशुदा" />
 
       <div className="work">
-        <div className="card formcard">
+        <form className="card formcard" action={fileMissingReport}>
           <div className="fhead">
             <div>
               <div className="eyebrow">Missing person report</div>
@@ -44,20 +38,20 @@ export default async function ReportMissing() {
                     Name <span className="hi">नाम</span>
                     <span className="req">*</span>
                   </label>
-                  <input className="input" defaultValue="Aarti Yadav" />
+                  <input className="input" name="name" defaultValue="Aarti Yadav" />
                 </div>
                 <div className="grid2">
                   <div className="field">
                     <label>
                       Age <span className="hi">उम्र</span>
                     </label>
-                    <input className="input" defaultValue="7 years" />
+                    <input className="input" name="age" defaultValue="7 years" />
                   </div>
                   <div className="field">
                     <label>
                       Gender <span className="hi">लिंग</span>
                     </label>
-                    <input className="input" defaultValue="Girl" />
+                    <input className="input" name="gender" defaultValue="Girl" />
                   </div>
                 </div>
                 <div className="field">
@@ -67,6 +61,7 @@ export default async function ReportMissing() {
                   </label>
                   <input
                     className="input"
+                    name="wearing"
                     defaultValue="Red frock, yellow hairband, silver anklets"
                   />
                 </div>
@@ -75,14 +70,7 @@ export default async function ReportMissing() {
                 <label>
                   Photo <span className="opt">If any</span>
                 </label>
-                <div className="shot photo-big">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8A9690" strokeWidth="1.9" aria-hidden>
-                    <rect x="3" y="6" width="18" height="13" rx="3" />
-                    <circle cx="12" cy="12.5" r="3.2" />
-                    <path d="M8 6l1.5-2h5L16 6" />
-                  </svg>
-                  <div className="lab">Take or<br />upload photo</div>
-                </div>
+                <PhotoCapture  />
               </div>
             </div>
           </div>
@@ -95,22 +83,12 @@ export default async function ReportMissing() {
                   Between <span className="hi">समय</span>
                 </label>
                 <div className="grid2">
-                  <input className="input mono" defaultValue="13:30" />
-                  <input className="input mono" defaultValue="13:50" />
+                  <input className="input mono" name="lastSeenFrom" defaultValue="13:30" />
+                  <input className="input mono" name="lastSeenTo" defaultValue="13:50" />
                 </div>
                 <span className="hint">Approximate window is fine.</span>
               </div>
-              <div className="field">
-                <label>
-                  Where <span className="hi">स्थान</span>
-                </label>
-                <div className="map">
-                  <div className="pin">
-                    <Pin />
-                  </div>
-                  <span className="lbl">Akhara Marg, near Sector 8 gate</span>
-                </div>
-              </div>
+              <LocationField />
             </div>
           </div>
 
@@ -121,17 +99,17 @@ export default async function ReportMissing() {
                 <label>
                   Name <span className="req">*</span>
                 </label>
-                <input className="input" defaultValue="Suresh Yadav" />
+                <input className="input" name="reporterName" defaultValue="Suresh Yadav" />
               </div>
               <div className="field">
                 <label>
                   Mobile <span className="req">*</span>
                 </label>
-                <input className="input mono" defaultValue="+91 98270 …" />
+                <input className="input mono" name="reporterMobile" defaultValue="+91 98270 …" />
               </div>
               <div className="field">
                 <label>Relation</label>
-                <input className="input" defaultValue="Father" />
+                <input className="input" name="relation" defaultValue="Father" />
               </div>
             </div>
             <div className="secure">
@@ -144,12 +122,12 @@ export default async function ReportMissing() {
           </div>
 
           <div className="factions">
-            <button className="btn btn-danger grow btn-lg">
+            <button type="submit" className="btn btn-danger grow btn-lg">
               File missing report <span className="sub">सूचना दर्ज करें</span>
             </button>
-            <button className="btn btn-ghost">Save draft</button>
+            <button type="button" className="btn btn-ghost">Save draft</button>
           </div>
-        </div>
+        </form>
 
         <aside className="card panel">
           <div className="ph2">
