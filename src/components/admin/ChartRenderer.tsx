@@ -96,11 +96,22 @@ export function ChartRenderer({
           </button>
         )}
       </figcaption>
-      <div className="achart-box">
-        <ResponsiveContainer width="100%" height={240}>
-          {renderChart(spec)}
-        </ResponsiveContainer>
-      </div>
+      {spec.type === "stat" ? (
+        <div className="statrow">
+          {spec.data.map((d, i) => (
+            <div className="stattile" key={i}>
+              <div className="statval">{String(d.value)}</div>
+              <div className="statlabel">{String(d.name)}</div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="achart-box">
+          <ResponsiveContainer width="100%" height={240}>
+            {renderChart(spec)}
+          </ResponsiveContainer>
+        </div>
+      )}
     </figure>
   );
 }

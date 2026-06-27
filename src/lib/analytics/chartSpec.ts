@@ -2,7 +2,7 @@
 import { z } from "zod";
 
 export const MAX_POINTS = 50;
-const CHART_TYPES = ["bar", "line", "area", "pie"] as const;
+const CHART_TYPES = ["bar", "line", "area", "pie", "stat"] as const;
 export type ChartType = (typeof CHART_TYPES)[number];
 
 export type ChartSeries = { key: string; label: string };
@@ -46,7 +46,7 @@ export function normalizeChartSpec(input: unknown): ChartSpec | null {
 
   const title = typeof input.title === "string" && input.title.trim() ? input.title : "Chart";
 
-  if (type !== "pie") {
+  if (type !== "pie" && type !== "stat") {
     const xKey = input.xKey;
     const series = input.series;
     if (typeof xKey !== "string" || !xKey) return null;
@@ -60,7 +60,30 @@ export function normalizeChartSpec(input: unknown): ChartSpec | null {
     return { type: type as ChartType, title, data, xKey, series: series as ChartSeries[] };
   }
 
-  // Pie always renders from {name, value}; coerce whatever field names the model used.
+  // Stat tiles are display-only: keep the value as-is (it may be a formatted string like "32%").
+  if (type === "stat") {
+    const statData = data.map((d) => {
+      const name =
+        typeof d.name === "string"
+          ? d.name
+          : typeof d.label === "string"
+            ? d.label
+            : (Object.values(d).find((v) => typeof v === "string") as string | undefined) ?? "—";
+      let value: string | number | undefined = d.value ?? d.val;
+      if (value === undefined) {
+        for (const [k, v] of Object.entries(d)) {
+          if (k !== "name" && k !== "label") {
+            value = v;
+            break;
+          }
+        }
+      }
+      return { name, value: value ?? "" };
+    });
+    return { type: "stat", title, data: statData };
+  }
+
+  // Pie renders from {name, value}; value must be numeric for slice sizing.
   const pieData = data.map((d) => {
     const name =
       typeof d.name === "string"

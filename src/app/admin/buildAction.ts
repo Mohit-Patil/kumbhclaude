@@ -6,12 +6,20 @@ import { metricTools } from "@/lib/analytics/metricTools";
 import { ChartSpecSchema, normalizeChartSpec, type ChartSpec } from "@/lib/analytics/chartSpec";
 import { saveDashboard } from "@/lib/analytics/dashboardStore";
 
-const SYSTEM = `Build a cohesive analytics dashboard for the requested theme for Punarmilan, a
-missing-person reunification service at the Nashik Kumbh Mela. Use the metric tools to fetch real
-data, then emit 3 to 6 complementary charts via show_chart that cover the theme from different
-angles (totals, trends over time, by zone, match methods, time to reunion, busiest booths — as
-relevant). Pick sensible chart types and pass the real data points inline. Do not write prose —
-only call tools.`;
+const SYSTEM = `Build a rich, intuitive analytics dashboard for the requested theme for Punarmilan,
+a missing-person reunification service at the Nashik Kumbh Mela.
+
+Steps:
+1. Call the metric tools to fetch real data across MANY dimensions relevant to the theme.
+2. FIRST emit one show_chart with type "stat" — a KPI overview row of 4-6 headline numbers from
+   the kpis tool (e.g. reunion rate %, reunited, open missing, open minors, avg minutes to
+   reunite). Pass them as data: [{name, value}, ...].
+3. THEN emit 5 to 8 more charts via show_chart covering different angles — choose from: status
+   counts, trends over time, activity by hour, by zone, by age band, by gender, match methods,
+   confidence distribution, reunion funnel, time to reunion, top booths. Prefer variety of chart
+   types (bar, line, area, pie). Pass the real data points inline in each chart's data.
+
+Make it comprehensive and multi-dimensional, not basic. Do not write prose — only call tools.`;
 
 export async function buildDashboardAction(
   theme: string,
@@ -34,7 +42,7 @@ export async function buildDashboardAction(
     await generateText({
       model: anthropic("claude-sonnet-4-6"),
       tools: { ...metricTools, show_chart },
-      stopWhen: stepCountIs(12),
+      stopWhen: stepCountIs(20),
       system: SYSTEM,
       prompt: `Theme: ${t}`,
     });
