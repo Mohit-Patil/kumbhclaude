@@ -54,6 +54,17 @@ const screens = [
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#39517d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 4v7a5 5 0 005 5 5 5 0 005-5V4"/><circle cx="7" cy="4" r="1.6"/><circle cx="17" cy="4" r="1.6"/><circle cx="12" cy="20" r="1.8"/></svg>
     ),
   },
+  {
+    href: "/map",
+    icon: "map",
+    title: "Search map",
+    hi: "खोज नक्शा",
+    dev: "Control room · Live map",
+    body: "Plot missing and found reports on the city map with CCTV, police and crowd choke points — then build a search plan for any case.",
+    glyph: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0E7C6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 3 4 5v16l5-2 6 2 5-2V3l-5 2-6-2z"/><path d="M9 3v16M15 5v16"/></svg>
+    ),
+  },
 ];
 
 export default function Home() {

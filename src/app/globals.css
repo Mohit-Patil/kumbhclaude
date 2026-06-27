@@ -351,6 +351,14 @@ a {
 .av-silhouette {
   background: radial-gradient(120% 120% at 50% 30%, #fff, var(--sand));
   border: 1px solid var(--line);
+  overflow: hidden;
+}
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
 }
 
 /* ================= LANDING ================= */
@@ -488,6 +496,9 @@ a {
 }
 .ti.ctrl {
   background: #e6ecf5;
+}
+.ti.map {
+  background: var(--teal-tint);
 }
 
 /* ================= MOBILE FORM SHELL (register) ================= */
@@ -1281,3 +1292,254 @@ a {
   }
 }
 
+
+/* ===========================================================================
+   Operator search map (/map)
+   =========================================================================== */
+.map-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--sand);
+}
+.map-shell {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+.map-rail {
+  width: 340px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--sand);
+  border-right: 1px solid var(--line);
+}
+.map-canvas {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+.map-canvas > div {
+  width: 100%;
+  height: 100%;
+}
+
+.map-toggles,
+.map-panel {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 13px 14px;
+  box-shadow: var(--shadow);
+}
+.map-toggles h3,
+.map-panel h3 {
+  margin: 0 0 9px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.map-panel h3 .ct {
+  background: var(--sand-2);
+  color: var(--ink-soft);
+  font-size: 11px;
+  border-radius: 20px;
+  padding: 1px 8px;
+  font-weight: 600;
+}
+.map-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-soft);
+  padding: 3px 0;
+  cursor: pointer;
+}
+.map-toggle input {
+  accent-color: var(--teal);
+  width: 15px;
+  height: 15px;
+}
+.map-hint {
+  margin: 0 0 8px;
+  font-size: 11.5px;
+  color: var(--ink-faint);
+}
+/* Help-booth marker — small marigold tent, distinct from report/police pins */
+.booth-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: var(--marigold-deep, #c97d00);
+  border: 1.5px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  transform: translateY(-2px);
+}
+.map-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.map-listitem {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "nm ago" "mt mt";
+  gap: 1px 8px;
+  text-align: left;
+  width: 100%;
+  background: var(--sand);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+.map-listitem:hover {
+  border-color: var(--ink-faint);
+}
+.map-listitem.active {
+  background: var(--vermilion-tint);
+  border-color: var(--vermilion);
+}
+.map-listitem.alert {
+  background: var(--marigold-tint);
+  border-color: var(--marigold);
+}
+.map-listitem .nm {
+  grid-area: nm;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.map-listitem .mt {
+  grid-area: mt;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.map-listitem .ago {
+  grid-area: ago;
+  font-size: 11px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+.map-panel.plan {
+  border-color: var(--vermilion);
+}
+.map-radius {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-bottom: 8px;
+}
+.map-radius select {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 3px 6px;
+  font: inherit;
+  font-size: 12px;
+}
+.plan-list {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.plan-list li {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  border-left: 3px solid var(--teal);
+  padding-left: 9px;
+}
+.plan-list li b {
+  color: var(--ink);
+}
+.plan-list .sub {
+  color: var(--ink-faint);
+}
+.map-missing-key {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  padding: 40px;
+  color: var(--ink-soft);
+}
+.map-missing-key code {
+  background: var(--sand-2);
+  padding: 1px 5px;
+  border-radius: 5px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+@media (max-width: 760px) {
+  .map-page {
+    height: auto;
+  }
+  .map-shell {
+    flex-direction: column;
+  }
+  .map-rail {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .map-canvas {
+    height: 70vh;
+  }
+}
+
+/* ===========================================================================
+   AI match verdict + rationale (dashboard candidate cards)
+   =========================================================================== */
+.airow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 10px 0 2px;
+  padding: 8px 10px;
+  background: var(--sand);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.vbadge {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 20px;
+  color: #fff;
+}
+.vbadge.likely {
+  background: var(--teal);
+}
+.vbadge.possible {
+  background: var(--marigold-deep);
+}
+.vbadge.unlikely {
+  background: var(--ink-faint);
+}
+.arat {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}

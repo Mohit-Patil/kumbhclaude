@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { Mark, Silhouette } from "@/components/brand";
+import { Mark } from "@/components/brand";
+import { Avatar } from "@/components/avatar";
 import { getDashboardData, type QueueItem, type MatchCard } from "@/lib/queries";
+import { verdictLabel } from "@/lib/ai/verdict";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +23,7 @@ function QCard({ kind, item }: { kind: "miss" | "found"; item: QueueItem }) {
   return (
     <div className={`qcard ${kind}`}>
       <div className="ph av-silhouette">
-        <Silhouette size={20} />
+        <Avatar url={item.photo} size={20} />
       </div>
       <div style={{ flex: 1 }}>
         <div className="nm">{item.name}</div>
@@ -33,16 +35,24 @@ function QCard({ kind, item }: { kind: "miss" | "found"; item: QueueItem }) {
 }
 
 function MatchBig({ m }: { m: MatchCard }) {
-  const pct = Math.round(m.confidence * 100);
-  const hi = m.confidence >= 0.8;
+  const eff = m.aiConfidence ?? m.confidence;
+  const pct = Math.round(eff * 100);
+  const hi = eff >= 0.8;
   const methodLabel =
-    m.method === "aadhaar" ? "Aadhaar match" : m.method === "phone" ? "Phone match" : "Description + age";
+    m.method === "aadhaar"
+      ? "Aadhaar match"
+      : m.method === "phone"
+        ? "Phone match"
+        : m.aiConfidence != null
+          ? "AI · description + age"
+          : "Description + age";
+  const verdict = m.aiVerdict as "likely" | "possible" | "unlikely" | null;
   return (
     <div className="matchbig">
       <div className="pair">
         <div className="pp">
           <div className="ph av-silhouette">
-            <Silhouette size={28} />
+            <Avatar url={m.missingPhoto} size={28} />
           </div>
           <div className="nm">{m.missingName}</div>
           <div className="mt">
@@ -57,7 +67,7 @@ function MatchBig({ m }: { m: MatchCard }) {
         <MergeNode />
         <div className="pp">
           <div className="ph av-silhouette">
-            <Silhouette size={28} />
+            <Avatar url={m.foundPhoto} size={28} />
           </div>
           <div className="nm">{m.foundName}</div>
           <div className="mt">
@@ -70,6 +80,12 @@ function MatchBig({ m }: { m: MatchCard }) {
           </div>
         </div>
       </div>
+      {m.aiRationale && (
+        <div className="airow">
+          {verdict && <span className={`vbadge ${verdict}`}>{verdictLabel(verdict)}</span>}
+          <span className="arat">{m.aiRationale}</span>
+        </div>
+      )}
       <div className="confwrap">
         <div className={`meter ${hi ? "hi" : "mid"}`}>
           <i style={{ width: `${pct}%` }} />
@@ -115,6 +131,9 @@ export default async function Dashboard() {
             <div className="k">Source</div>
             <div className="v mono">Supabase · ap-south-1</div>
           </div>
+          <Link href="/map" className="titlechip" style={{ textDecoration: "none" }}>
+            Search map →
+          </Link>
           <div className="duty">
             <div className="cell" style={{ textAlign: "right" }}>
               <div className="k">Supervisor</div>

@@ -45,6 +45,7 @@ export function Silhouette({ size = 22 }: { size?: number }) {
   );
 }
 
+
 export function AgentBand({
   title,
   titleHi,
