@@ -1,64 +1,32 @@
-import { AgentBand } from "@/components/brand";
-import { Avatar } from "@/components/avatar";
+import { BoothTop } from "@/components/ui";
 import { getCandidateMatches } from "@/lib/queries";
-import ReportForm from "./ReportForm";
+import MissingForm from "./MissingForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function ReportMissing() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ kiosk?: string }>;
+}) {
+  const sp = await searchParams;
+  const kiosk = sp?.kiosk === "1";
   const matches = await getCandidateMatches();
 
   return (
-    <div className="agent">
-      <AgentBand title="Report missing" titleHi="गुमशुदा" />
+    <div className="civic">
+      <BoothTop kiosk={kiosk} titleDev="गुमशुदा की सूचना" titleEn="Report missing" />
 
-      <div className="work">
-        <ReportForm />
+      <main className="civic-main civic-wide civic-tight">
+        <div className="civic-head">
+          <h1><span className="dev">कौन बिछड़ गया है?</span><span className="en">Who has been separated?</span></h1>
+          <p><span className="dev">जल्दबाज़ी ठीक है। फ़ोटो और आख़िरी जगह सबसे ज़रूरी हैं।</span> Take your time. A photo and the last-seen place matter most.</p>
+        </div>
 
-        <aside className="card panel">
-          <div className="ph2">
-            Possible matches <span className="hi">संभावित मिलान</span>
-          </div>
-          <p className="sub">
-            Live found-person candidates from the match engine, ranked by similarity.
-          </p>
-
-          {matches.map((m) => {
-            const pct = Math.round(m.confidence * 100);
-            const hi = m.confidence >= 0.8;
-            const method = m.method === "aadhaar" ? "Aadhaar" : m.method === "phone" ? "Phone" : "Description";
-            return (
-              <div className="match-card" key={m.id}>
-                <div className="ph av-silhouette">
-                  <Avatar url={m.foundPhoto} size={26} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div className="nm">{m.foundName}</div>
-                  <div className="mt">{m.foundMeta} · paired with {m.missingName}</div>
-                  <div className={`meter ${hi ? "hi" : "mid"}`}>
-                    <i style={{ width: `${pct}%` }} />
-                  </div>
-                  <div className="confline">
-                    <span>Similarity</span>
-                    <span className={`pct ${hi ? "hi" : "mid"}`}>{pct}% match</span>
-                  </div>
-                  <div className="methods">
-                    <span className="mtag">{method}</span>
-                    <span className="mtag">Age range</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-          {matches.length === 0 && (
-            <p className="hint">No candidate matches in the system yet.</p>
-          )}
-
-          <a className="chip ghost" style={{ justifyContent: "center" }} href="/dashboard">
-            Open full match board →
-          </a>
-        </aside>
-      </div>
+        <div className="work2">
+          <MissingForm matches={matches} />
+        </div>
+      </main>
     </div>
   );
 }

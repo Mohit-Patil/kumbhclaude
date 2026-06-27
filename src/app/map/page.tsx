@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Mark } from "@/components/brand";
+import { Brand } from "@/components/brand";
 import { getMapReports, getBooths } from "@/lib/queries";
 import { OperatorMap } from "@/components/map/OperatorMap";
 
@@ -11,28 +11,14 @@ export default async function MapPage() {
 
   return (
     <div className="map-page">
-      <header className="band">
-        <div className="left">
-          <Link href="/" className="brand" aria-label="Punarmilan home">
-            <Mark size={36} />
-            <div className="name">
-              पुनर्मिलन<small>Punarmilan</small>
-            </div>
-          </Link>
-          <span className="titlechip">
-            Search map · <span className="hi">खोज नक्शा</span>
+      <header className="idband">
+        <Brand size={40} />
+        <div className="idband-where">
+          <span className="dev">खोज नक्शा · {missing.length} गुमशुदा · {found.length} मिले · {booths.length} बूथ</span>
+          <span className="en" style={{ display: "flex", gap: 14, alignItems: "center" }}>
+            Search map · {missing.length} missing · {found.length} found · {booths.length} booths
+            <Link href="/dashboard" style={{ fontWeight: 700, color: "var(--candidate-ink)" }}>← Control room</Link>
           </span>
-        </div>
-        <div className="ctx">
-          <div className="cell">
-            <div className="k">On map</div>
-            <div className="v mono">
-              {missing.length} missing · {found.length} found · {booths.length} booths
-            </div>
-          </div>
-          <Link href="/dashboard" className="titlechip" style={{ textDecoration: "none" }}>
-            ← Control room
-          </Link>
         </div>
       </header>
 
