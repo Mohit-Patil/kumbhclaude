@@ -1420,6 +1420,21 @@ a {
   color: var(--ink-faint);
   font-variant-numeric: tabular-nums;
 }
+/* Result rows that carry a person photo get a thumbnail column. */
+.map-listitem.withthumb {
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "ph nm ago" "ph mt mt";
+  align-items: center;
+  column-gap: 10px;
+}
+.map-thumb {
+  grid-area: ph;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  flex: 0 0 34px;
+  display: block;
+}
 .map-panel.plan {
   border-color: var(--vermilion);
 }
@@ -1532,26 +1547,33 @@ a {
 }
 
 /* ===========================================================================
-   Map AI search — full-width command bar at the top of /map
+   Map AI search — floating command bar centered over the map canvas
    =========================================================================== */
 .mapsearch {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 10px;
   flex-wrap: wrap;
-  padding: 12px 20px;
+  width: min(620px, calc(100% - 28px));
+  padding: 10px 12px;
   background: var(--paper);
-  border-bottom: 1px solid var(--line);
-  box-shadow: var(--shadow);
-  z-index: 2;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
 }
 .mapsearch-field {
   display: flex;
   align-items: center;
   gap: 9px;
-  flex: 1 1 420px;
-  max-width: 720px;
-  height: 46px;
+  flex: 1 1 320px;
+  min-width: 0;
+  height: 44px;
   padding: 0 16px;
   background: var(--sand);
   border: 1px solid var(--line);
@@ -1601,20 +1623,28 @@ a {
 }
 .mapsearch-go {
   flex: 0 0 auto;
-  height: 46px;
-  padding: 0 24px;
+  height: 44px;
+  padding: 0 22px;
   border-radius: 999px;
 }
 .mapsearch-status {
-  font-size: 12.5px;
+  flex: 1 1 100%;
+  text-align: center;
+  font-size: 12px;
   color: var(--ink-soft);
   font-weight: 500;
 }
 @media (max-width: 760px) {
   .mapsearch {
-    padding: 10px 14px;
+    top: 10px;
+    width: calc(100% - 20px);
+    padding: 9px 10px;
+    gap: 8px;
   }
   .mapsearch-field {
+    flex: 1 1 100%;
+  }
+  .mapsearch-go {
     flex: 1 1 100%;
   }
 }
