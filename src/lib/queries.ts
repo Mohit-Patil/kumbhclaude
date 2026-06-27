@@ -12,6 +12,7 @@ export type QueueItem = {
   name: string;
   meta: string;
   ago: string;
+  photo: string | null;
 };
 export type MatchCard = {
   id: string;
@@ -19,8 +20,10 @@ export type MatchCard = {
   method: string;
   missingName: string;
   missingMeta: string;
+  missingPhoto: string | null;
   foundName: string;
   foundMeta: string;
+  foundPhoto: string | null;
 };
 export type ReunitedItem = {
   id: string;
@@ -46,6 +49,7 @@ type PersonLite = {
   age: number | null;
   age_range: string | null;
   description: string | null;
+  photo: { storage_ref: string }[] | null;
 };
 type BoothLite = { code: string | null; zone: string | null };
 type BoothGeo = {
@@ -77,6 +81,8 @@ type MatchRow = {
   found: { booth: BoothLite | null; subject: PersonLite | null } | null;
 };
 
+const PERSON_FIELDS = "full_name,age,age_range,description,photo(storage_ref)";
+
 /* ---------- helpers ---------- */
 function timeAgo(ts: string | null): string {
   if (!ts) return "";
@@ -85,13 +91,6 @@ function timeAgo(ts: string | null): string {
   const h = Math.floor(mins / 60);
   const m = mins % 60;
   return m ? `${h}h ${m}m` : `${h}h`;
-}
-
-function displayName(p: PersonLite | null | undefined): string {
-  if (!p) return "Unknown";
-  if (p.full_name) return p.full_name;
-  if (p.age_range) return `Unidentified · ${p.age_range}`;
-  return "Unidentified";
 }
 
 function ageLabel(p: PersonLite | null | undefined): string {
@@ -109,6 +108,17 @@ function personLabel(p: PersonLite | null | undefined): string {
     return a ? `${p.full_name} · ${a}` : p.full_name;
   }
   return p.age_range ? `Unidentified · ${p.age_range}` : "Unidentified";
+}
+
+function photoUrl(p: PersonLite | null | undefined): string | null {
+  return p?.photo?.[0]?.storage_ref ?? null;
+}
+
+function displayName(p: PersonLite | null | undefined): string {
+  if (!p) return "Unknown";
+  if (p.full_name) return p.full_name;
+  if (p.age_range) return `Unidentified · ${p.age_range}`;
+  return "Unidentified";
 }
 
 async function statusCount(
@@ -137,7 +147,7 @@ export async function getMissingQueue(): Promise<QueueItem[]> {
   const { data } = await supabase
     .from("missing_report")
     .select(
-      "missing_report_id,last_seen_to,created_at,booth:booth!missing_report_booth_id_fkey(code,zone),subject:person!missing_report_subject_person_id_fkey(full_name,age,age_range,description)",
+      `missing_report_id,last_seen_to,created_at,booth:booth!missing_report_booth_id_fkey(code,zone),subject:person!missing_report_subject_person_id_fkey(${PERSON_FIELDS})`,
     )
     .eq("status", "open")
     .order("last_seen_to", { ascending: false });
@@ -147,6 +157,7 @@ export async function getMissingQueue(): Promise<QueueItem[]> {
     name: personLabel(r.subject),
     meta: [r.booth?.zone, r.subject?.description].filter(Boolean).join(" · "),
     ago: timeAgo(r.last_seen_to ?? r.created_at),
+    photo: photoUrl(r.subject),
   }));
 }
 
@@ -154,7 +165,7 @@ export async function getFoundQueue(): Promise<QueueItem[]> {
   const { data } = await supabase
     .from("found_report")
     .select(
-      "found_report_id,found_at,created_at,booth:booth!found_report_booth_id_fkey(code,zone),subject:person!found_report_subject_person_id_fkey(full_name,age,age_range,description)",
+      `found_report_id,found_at,created_at,booth:booth!found_report_booth_id_fkey(code,zone),subject:person!found_report_subject_person_id_fkey(${PERSON_FIELDS})`,
     )
     .eq("status", "open")
     .order("found_at", { ascending: false });
@@ -166,6 +177,7 @@ export async function getFoundQueue(): Promise<QueueItem[]> {
       .filter(Boolean)
       .join(" · "),
     ago: timeAgo(r.found_at ?? r.created_at),
+    photo: photoUrl(r.subject),
   }));
 }
 
@@ -173,7 +185,7 @@ export async function getCandidateMatches(): Promise<MatchCard[]> {
   const { data } = await supabase
     .from("match")
     .select(
-      "match_id,confidence,match_method,missing:missing_report!match_missing_report_id_fkey(booth:booth!missing_report_booth_id_fkey(code),subject:person!missing_report_subject_person_id_fkey(full_name,age,age_range,description)),found:found_report!match_found_report_id_fkey(booth:booth!found_report_booth_id_fkey(code),subject:person!found_report_subject_person_id_fkey(full_name,age,age_range,description))",
+      `match_id,confidence,match_method,missing:missing_report!match_missing_report_id_fkey(booth:booth!missing_report_booth_id_fkey(code),subject:person!missing_report_subject_person_id_fkey(${PERSON_FIELDS})),found:found_report!match_found_report_id_fkey(booth:booth!found_report_booth_id_fkey(code),subject:person!found_report_subject_person_id_fkey(${PERSON_FIELDS}))`,
     )
     .eq("status", "proposed")
     .order("confidence", { ascending: false });
@@ -184,8 +196,10 @@ export async function getCandidateMatches(): Promise<MatchCard[]> {
     method: r.match_method,
     missingName: personLabel(r.missing?.subject),
     missingMeta: r.missing?.booth?.code ? `Reported at ${r.missing.booth.code}` : "Missing",
+    missingPhoto: photoUrl(r.missing?.subject),
     foundName: displayName(r.found?.subject),
     foundMeta: r.found?.booth?.code ? `Safe at ${r.found.booth.code}` : "Found",
+    foundPhoto: photoUrl(r.found?.subject),
   }));
 }
 
@@ -193,7 +207,7 @@ export async function getReunited(): Promise<ReunitedItem[]> {
   const { data } = await supabase
     .from("match")
     .select(
-      "match_id,match_method,resolved_at,missing:missing_report!match_missing_report_id_fkey(booth:booth!missing_report_booth_id_fkey(code),subject:person!missing_report_subject_person_id_fkey(full_name,age))",
+      "match_id,match_method,resolved_at,missing:missing_report!match_missing_report_id_fkey(booth:booth!missing_report_booth_id_fkey(code),subject:person!missing_report_subject_person_id_fkey(full_name,age,age_range,description))",
     )
     .eq("status", "reunited")
     .order("resolved_at", { ascending: false });
@@ -201,7 +215,7 @@ export async function getReunited(): Promise<ReunitedItem[]> {
   return rows.map((r) => ({
     id: r.match_id,
     name: personLabel(r.missing?.subject),
-    via: `${r.match_method === "aadhaar" ? "Aadhaar" : "Face"} match${r.missing?.booth?.code ? ` · Booth ${r.missing.booth.code}` : ""}`,
+    via: `${r.match_method === "aadhaar" ? "Aadhaar" : r.match_method === "phone" ? "Phone" : "Description"} match${r.missing?.booth?.code ? ` · Booth ${r.missing.booth.code}` : ""}`,
     ago: timeAgo(r.resolved_at),
   }));
 }

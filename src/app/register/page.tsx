@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { Mark, Silhouette } from "@/components/brand";
+import { Mark } from "@/components/brand";
+import { Avatar } from "@/components/avatar";
+
+const FACE = (id: string) => `/faces/${id}.jpg`;
 
 export default function Register() {
   return (
@@ -77,7 +80,7 @@ export default function Register() {
           <div className="people">
             <div className="person">
               <div className="av av-silhouette">
-                <Silhouette />
+                <Avatar url={FACE("c0000000-0000-0000-0000-000000000010")} />
               </div>
               <div>
                 <div className="nm">Aarti Yadav</div>
@@ -90,7 +93,7 @@ export default function Register() {
             </div>
             <div className="person">
               <div className="av av-silhouette">
-                <Silhouette />
+                <Avatar url={FACE("c0000000-0000-0000-0000-000000000002")} />
               </div>
               <div>
                 <div className="nm">Kamla Devi</div>

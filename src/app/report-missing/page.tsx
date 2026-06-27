@@ -1,4 +1,5 @@
-import { AgentBand, Silhouette } from "@/components/brand";
+import { AgentBand } from "@/components/brand";
+import { Avatar } from "@/components/avatar";
 import { getCandidateMatches } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -165,7 +166,7 @@ export default async function ReportMissing() {
             return (
               <div className="match-card" key={m.id}>
                 <div className="ph av-silhouette">
-                  <Silhouette size={26} />
+                  <Avatar url={m.foundPhoto} size={26} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <div className="nm">{m.foundName}</div>
