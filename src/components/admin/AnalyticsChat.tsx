@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
 import { askAnalytics, type AnalyticsAnswer } from "@/app/admin/askAction";
 import { saveDashboardAction } from "@/app/admin/saveAction";
 import type { ChartSpec } from "@/lib/analytics/chartSpec";
@@ -93,7 +94,11 @@ export function AnalyticsChat() {
                 <p className="achat-err">Couldn&apos;t complete that: {turn.error}</p>
               ) : (
                 <>
-                  {turn.answer && <p className="achat-answer">{turn.answer}</p>}
+                  {turn.answer && (
+                    <div className="achat-answer">
+                      <ReactMarkdown>{turn.answer}</ReactMarkdown>
+                    </div>
+                  )}
                   {turn.charts.map((c, j) => (
                     <ChartRenderer key={j} spec={c} onPin={() => pin(c)} pinned={pinned.includes(c)} />
                   ))}

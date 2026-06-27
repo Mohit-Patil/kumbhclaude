@@ -47,4 +47,35 @@ export const metricTools = {
     inputSchema: z.object({ limit: z.number().int().min(1).max(50).default(10) }),
     execute: async ({ limit }) => rpc("metric_top_booths", { p_limit: limit }),
   }),
+  kpis: tool({
+    description:
+      "Headline KPI numbers in one row: open_missing, open_found, reunited, reunion_rate (%), avg_min_to_reunion, open_minors. Use for a 'stat' overview card.",
+    inputSchema: z.object({}),
+    execute: async () => rpc("metric_kpis"),
+  }),
+  by_age_band: tool({
+    description: "Counts by age band (Child/Teen/Adult/Senior) for 'missing' or 'found' subjects.",
+    inputSchema: z.object({ kind: z.enum(["missing", "found"]).default("missing") }),
+    execute: async ({ kind }) => rpc("metric_by_age_band", { p_kind: kind }),
+  }),
+  by_gender: tool({
+    description: "Counts by gender for 'missing' or 'found' subjects.",
+    inputSchema: z.object({ kind: z.enum(["missing", "found"]).default("missing") }),
+    execute: async ({ kind }) => rpc("metric_by_gender", { p_kind: kind }),
+  }),
+  reunion_funnel: tool({
+    description: "Reunification funnel: Reported → Matched → Reunited counts.",
+    inputSchema: z.object({}),
+    execute: async () => rpc("metric_reunion_funnel"),
+  }),
+  activity_by_hour: tool({
+    description: "Counts by hour of day (0-23) for 'missing'/'found'/'reunited' — when activity happens.",
+    inputSchema: z.object({ kind: z.enum(["missing", "found", "reunited"]).default("missing") }),
+    execute: async ({ kind }) => rpc("metric_activity_by_hour", { p_kind: kind }),
+  }),
+  confidence_distribution: tool({
+    description: "Match confidence distribution across bands (0.4-0.6, 0.6-0.8, 0.8-1.0).",
+    inputSchema: z.object({}),
+    execute: async () => rpc("metric_confidence_distribution"),
+  }),
 };
