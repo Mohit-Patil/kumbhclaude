@@ -3,6 +3,7 @@ import { Avatar } from "@/components/avatar";
 import { getCandidateMatches } from "@/lib/queries";
 import LocationField from "./LocationField";
 import { fileMissingReport } from "./actions";
+import { PhotoCapture } from "@/components/photo-capture";
 
 export const dynamic = "force-dynamic";
 
@@ -69,14 +70,7 @@ export default async function ReportMissing() {
                 <label>
                   Photo <span className="opt">If any</span>
                 </label>
-                <div className="shot photo-big">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8A9690" strokeWidth="1.9" aria-hidden>
-                    <rect x="3" y="6" width="18" height="13" rx="3" />
-                    <circle cx="12" cy="12.5" r="3.2" />
-                    <path d="M8 6l1.5-2h5L16 6" />
-                  </svg>
-                  <div className="lab">Take or<br />upload photo</div>
-                </div>
+                <PhotoCapture  />
               </div>
             </div>
           </div>
