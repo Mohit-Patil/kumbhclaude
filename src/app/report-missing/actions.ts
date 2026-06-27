@@ -25,6 +25,11 @@ export async function fileMissingReport(formData: FormData) {
   const age = parseAge(formData.get("age"));
   const description = String(formData.get("wearing") ?? "").trim() || null;
 
+  // Uploaded photo arrives as a data: URL from the PhotoCapture field. Stored
+  // directly in photo.storage_ref, which the UI renders straight into <img src>.
+  const photoRef = String(formData.get("photo") ?? "");
+  const photo = photoRef.startsWith("data:image/") ? photoRef : null;
+
   const lat = parseCoord(formData.get("lastSeenLat"));
   const lon = parseCoord(formData.get("lastSeenLon"));
   if (lat == null || lon == null) {
@@ -43,6 +48,18 @@ export async function fileMissingReport(formData: FormData) {
     .single();
   if (personError) {
     throw new Error(`Could not save person: ${personError.message}`);
+  }
+
+  // 1b. Attach the uploaded photo to the person, if one was provided.
+  if (photo) {
+    const { error: photoError } = await supabaseAdmin.from("photo").insert({
+      person_id: person.person_id,
+      storage_ref: photo,
+      kind: "selfie",
+    });
+    if (photoError) {
+      throw new Error(`Could not save photo: ${photoError.message}`);
+    }
   }
 
   // 2. Resolve the booth by its code (hardcoded to K-14 for now).

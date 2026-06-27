@@ -332,6 +332,8 @@ a {
 }
 
 .shot {
+  position: relative;
+  overflow: hidden;
   border: 2px dashed var(--sand-2);
   background: var(--sand);
   border-radius: 14px;
@@ -342,6 +344,10 @@ a {
   gap: 9px;
   color: var(--ink-faint);
   text-align: center;
+}
+/* label.shot (upload-only) gets a pointer cursor like the button variant */
+label.shot {
+  cursor: pointer;
 }
 .shot .lab {
   font-size: 12.5px;
