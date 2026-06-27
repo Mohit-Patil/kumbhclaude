@@ -5,6 +5,8 @@ import { APIProvider, Map, useMap } from "@vis.gl/react-google-maps";
 import type { MapReport } from "@/lib/queries";
 import { proximityPairs } from "@/lib/geo";
 import { buildSearchPlan } from "@/lib/searchPlan";
+import { textFilterMissing } from "@/lib/mapSearchFilter";
+import { searchMissingPersons } from "@/app/map/searchAction";
 import { CctvLayer } from "./CctvLayer";
 import { HeatmapLayer } from "./HeatmapLayer";
 import { ChokeLayer } from "./ChokeLayer";
@@ -26,6 +28,9 @@ type Layers = {
   found: boolean;
   heatmap: boolean;
 };
+
+/** A rail result: AI gives score+reason; the text fallback gives score=null. */
+type RailResult = { id: string; score: number | null; reason: string };
 
 const DEFAULT_LAYERS: Layers = {
   cctv: false,
@@ -61,6 +66,21 @@ export function OperatorMap({
   const [layers, setLayers] = useState<Layers>(DEFAULT_LAYERS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [radius, setRadius] = useState(500);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<RailResult[] | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [searchNote, setSearchNote] = useState<string | null>(null);
+
+  const highlightIds = useMemo(
+    () => (results ? new Set(results.map((r) => r.id)) : null),
+    [results],
+  );
+  // NB: `Map` is shadowed by the vis.gl <Map> import, so use a plain record here.
+  const missingById = useMemo(() => {
+    const byId: Record<string, MapReport> = {};
+    for (const m of missing) byId[m.id] = m;
+    return byId;
+  }, [missing]);
 
   const selected = useMemo(
     () => missing.find((m) => m.id === selectedId) ?? null,
@@ -97,6 +117,41 @@ export function OperatorMap({
 
   const toggle = (k: keyof Layers) => setLayers((l) => ({ ...l, [k]: !l[k] }));
 
+  async function runSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) {
+      setResults(null);
+      setSearchNote(null);
+      return;
+    }
+    setSearching(true);
+    setSearchNote(null);
+    try {
+      const r = await searchMissingPersons(q);
+      setResults(r.map((x) => ({ id: x.id, score: x.score, reason: x.reason })));
+      if (r.length === 0) setSearchNote("No semantic matches for that query.");
+    } catch {
+      // Graceful fallback: client-side text filter over the loaded reports.
+      const items = missing.map((m) => ({
+        id: m.id,
+        label: m.label,
+        meta: [m.boothCode, m.meta].filter(Boolean).join(" · "),
+      }));
+      const filtered = textFilterMissing(items, q);
+      setResults(filtered.map((f) => ({ id: f.id, score: null, reason: "" })));
+      setSearchNote("AI search unavailable — showing text matches.");
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  function clearSearch() {
+    setQuery("");
+    setResults(null);
+    setSearchNote(null);
+  }
+
   return (
     <APIProvider apiKey={apiKey}>
       <div className="map-shell">
@@ -123,22 +178,66 @@ export function OperatorMap({
 
           <section className="map-panel">
             <h3>
-              Open missing <span className="ct">{missing.length}</span>
+              {results ? "Search results" : "Open missing"}{" "}
+              <span className="ct">{results ? results.length : missing.length}</span>
             </h3>
-            <p className="map-hint">Select a person to build a search plan.</p>
-            <div className="map-list">
-              {missing.map((r) => (
-                <button
-                  key={r.id}
-                  className={`map-listitem ${r.id === selectedId ? "active" : ""}`}
-                  onClick={() => setSelectedId(r.id === selectedId ? null : r.id)}
-                >
-                  <span className="nm">{r.label}</span>
-                  <span className="mt">{[r.boothCode, r.meta].filter(Boolean).join(" · ")}</span>
-                  <span className="ago">{r.ago}</span>
+            <form className="map-search" onSubmit={runSearch}>
+              <input
+                type="text"
+                placeholder="Search by description, name, age…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              <button type="submit" className="btn btn-primary btn-sm" disabled={searching}>
+                {searching ? "…" : "Search"}
+              </button>
+              {results && (
+                <button type="button" className="btn btn-ghost btn-sm" onClick={clearSearch}>
+                  Clear
                 </button>
-              ))}
-              {missing.length === 0 && <div className="map-hint">No open missing reports.</div>}
+              )}
+            </form>
+            {searchNote && <p className="map-hint">{searchNote}</p>}
+            {!results && <p className="map-hint">AI-ranks open missing reports against your query.</p>}
+
+            <div className="map-list">
+              {results
+                ? results.map((res) => {
+                    const r = missingById[res.id];
+                    if (!r) return null;
+                    return (
+                      <button
+                        key={res.id}
+                        className={`map-listitem ${res.id === selectedId ? "active" : ""}`}
+                        onClick={() => setSelectedId(res.id === selectedId ? null : res.id)}
+                      >
+                        <span className="nm">{r.label}</span>
+                        <span className="mt">
+                          {res.reason || [r.boothCode, r.meta].filter(Boolean).join(" · ")}
+                        </span>
+                        {res.score != null && (
+                          <span className="ago">{Math.round(res.score * 100)}%</span>
+                        )}
+                      </button>
+                    );
+                  })
+                : missing.map((r) => (
+                    <button
+                      key={r.id}
+                      className={`map-listitem ${r.id === selectedId ? "active" : ""}`}
+                      onClick={() => setSelectedId(r.id === selectedId ? null : r.id)}
+                    >
+                      <span className="nm">{r.label}</span>
+                      <span className="mt">{[r.boothCode, r.meta].filter(Boolean).join(" · ")}</span>
+                      <span className="ago">{r.ago}</span>
+                    </button>
+                  ))}
+              {results && results.length === 0 && (
+                <div className="map-hint">No matches — try different words.</div>
+              )}
+              {!results && missing.length === 0 && (
+                <div className="map-hint">No open missing reports.</div>
+              )}
             </div>
           </section>
 
@@ -214,6 +313,7 @@ export function OperatorMap({
               showMissing={layers.missing}
               showFound={layers.found}
               selectedId={selectedId}
+              highlightIds={highlightIds}
               onSelectMissing={(r) => setSelectedId(r.id === selectedId ? null : r.id)}
             />
             {selected && plan && (

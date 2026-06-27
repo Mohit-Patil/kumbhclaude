@@ -1530,3 +1530,30 @@ a {
   line-height: 1.45;
   color: var(--ink-soft);
 }
+
+/* ===========================================================================
+   Map AI search box (operator /map rail)
+   =========================================================================== */
+.map-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.map-search input {
+  flex: 1 1 100%;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 13px;
+  background: var(--paper);
+}
+.map-search input:focus {
+  outline: none;
+  border-color: var(--teal);
+}
+.map-search .btn {
+  flex: 0 0 auto;
+}
