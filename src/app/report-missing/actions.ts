@@ -1,8 +1,13 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
+
+/** Result surfaced to the form via `useActionState` so the UI can confirm. */
+export type FileReportState =
+  | { ok: true; name: string }
+  | { ok: false; error: string }
+  | null;
 
 function parseCoord(v: FormDataEntryValue | null): number | null {
   if (v == null) return null;
@@ -19,8 +24,15 @@ function parseAge(v: FormDataEntryValue | null): number | null {
  * Files a new missing-person report. The last-seen coordinates (from the
  * location dropdown or the dropped Google-map pin) are written to the
  * PostGIS `report_location` geography column as EWKT `POINT(lon lat)`.
+ *
+ * Returns a {@link FileReportState} instead of redirecting so the client form
+ * can show a confirmation popup. Errors are returned (not thrown) so they land
+ * in the same state object rather than tripping the error boundary.
  */
-export async function fileMissingReport(formData: FormData) {
+export async function fileMissingReport(
+  _prevState: FileReportState,
+  formData: FormData,
+): Promise<FileReportState> {
   const fullName = String(formData.get("name") ?? "").trim() || null;
   const age = parseAge(formData.get("age"));
   const description = String(formData.get("wearing") ?? "").trim() || null;
@@ -28,9 +40,10 @@ export async function fileMissingReport(formData: FormData) {
   const lat = parseCoord(formData.get("lastSeenLat"));
   const lon = parseCoord(formData.get("lastSeenLon"));
   if (lat == null || lon == null) {
-    throw new Error(
-      "Choose a location from the list or drop a pin on the map before filing the report.",
-    );
+    return {
+      ok: false,
+      error: "Choose a location from the list or drop a pin on the map before filing the report.",
+    };
   }
 
   const supabaseAdmin = getSupabaseAdmin();
@@ -42,7 +55,7 @@ export async function fileMissingReport(formData: FormData) {
     .select("person_id")
     .single();
   if (personError) {
-    throw new Error(`Could not save person: ${personError.message}`);
+    return { ok: false, error: `Could not save person: ${personError.message}` };
   }
 
   // 2. Resolve the booth by its code (hardcoded to K-14 for now).
@@ -52,7 +65,7 @@ export async function fileMissingReport(formData: FormData) {
     .eq("code", "K-14")
     .single();
   if (boothError) {
-    throw new Error(`Could not find booth K-14: ${boothError.message}`);
+    return { ok: false, error: `Could not find booth K-14: ${boothError.message}` };
   }
 
   // 3. Create the missing report with the PostGIS location.
@@ -65,10 +78,11 @@ export async function fileMissingReport(formData: FormData) {
     status: "open",
   });
   if (reportError) {
-    throw new Error(`Could not file missing report: ${reportError.message}`);
+    return { ok: false, error: `Could not file missing report: ${reportError.message}` };
   }
 
   revalidatePath("/dashboard");
   revalidatePath("/report-missing");
-  redirect("/dashboard");
+  revalidatePath("/map");
+  return { ok: true, name: fullName ?? "The missing person" };
 }

@@ -11,11 +11,16 @@ function Arrow() {
 
 type Role = {
   href: string;
-  accent: "reg" | "missing" | "found" | "match" | "map";
+  accent: "reg" | "missing" | "found" | "match" | "map" | "analytics";
   title: string; hi: string; device: string; deviceHi: string; glyph: React.ReactNode;
 };
 
 const roles: Role[] = [
+  {
+    href: "/map", accent: "map",
+    title: "Search map", hi: "खोज नक्शा", device: "Operator", deviceHi: "ऑपरेटर",
+    glyph: (<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M9 4l6 2 6-2v14l-6 2-6-2-6 2V6z" /><path d="M9 4v14M15 6v14" /></svg>),
+  },
   {
     href: "/register?kiosk=1", accent: "reg",
     title: "Register a family", hi: "परिवार पंजीकरण", device: "Self / kiosk", deviceHi: "स्वयं · कियोस्क",
@@ -37,9 +42,9 @@ const roles: Role[] = [
     glyph: (<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 4v7a5 5 0 0010 0V4" /><circle cx="7" cy="4" r="1.7" /><circle cx="17" cy="4" r="1.7" /><circle cx="12" cy="20" r="2" /><path d="M12 16v2" /></svg>),
   },
   {
-    href: "/map", accent: "map",
-    title: "Search map", hi: "खोज नक्शा", device: "Operator", deviceHi: "ऑपरेटर",
-    glyph: (<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M9 4l6 2 6-2v14l-6 2-6-2-6 2V6z" /><path d="M9 4v14M15 6v14" /></svg>),
+    href: "/admin", accent: "analytics",
+    title: "Analytics", hi: "विश्लेषण", device: "Administration", deviceHi: "प्रशासन",
+    glyph: (<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 19V5M4 19h16" /><rect x="7" y="11" width="3" height="5" /><rect x="12" y="8" width="3" height="8" /><rect x="17" y="13" width="3" height="3" /></svg>),
   },
 ];
 
