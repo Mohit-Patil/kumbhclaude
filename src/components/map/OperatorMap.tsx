@@ -5,6 +5,9 @@ import { APIProvider, Map, useMap } from "@vis.gl/react-google-maps";
 import type { MapReport, BoothPin } from "@/lib/queries";
 import { proximityPairs } from "@/lib/geo";
 import { buildSearchPlan } from "@/lib/searchPlan";
+import { textFilterMissing } from "@/lib/mapSearchFilter";
+import { searchMissingPersons } from "@/app/map/searchAction";
+import { Avatar } from "@/components/avatar";
 import { CctvLayer } from "./CctvLayer";
 import { HeatmapLayer } from "./HeatmapLayer";
 import { ChokeLayer } from "./ChokeLayer";
@@ -28,6 +31,9 @@ type Layers = {
   found: boolean;
   heatmap: boolean;
 };
+
+/** A rail result: AI gives score+reason; the text fallback gives score=null. */
+type RailResult = { id: string; score: number | null; reason: string };
 
 const DEFAULT_LAYERS: Layers = {
   booths: true,
@@ -66,6 +72,21 @@ export function OperatorMap({
   const [layers, setLayers] = useState<Layers>(DEFAULT_LAYERS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [radius, setRadius] = useState(500);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<RailResult[] | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [searchNote, setSearchNote] = useState<string | null>(null);
+
+  const highlightIds = useMemo(
+    () => (results ? new Set(results.map((r) => r.id)) : null),
+    [results],
+  );
+  // NB: `Map` is shadowed by the vis.gl <Map> import, so use a plain record here.
+  const missingById = useMemo(() => {
+    const byId: Record<string, MapReport> = {};
+    for (const m of missing) byId[m.id] = m;
+    return byId;
+  }, [missing]);
 
   const selected = useMemo(
     () => missing.find((m) => m.id === selectedId) ?? null,
@@ -102,6 +123,90 @@ export function OperatorMap({
 
   const toggle = (k: keyof Layers) => setLayers((l) => ({ ...l, [k]: !l[k] }));
 
+  async function runSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) {
+      setResults(null);
+      setSearchNote(null);
+      return;
+    }
+    setSearching(true);
+    setSearchNote(null);
+    try {
+      const r = await searchMissingPersons(q);
+      setResults(r.map((x) => ({ id: x.id, score: x.score, reason: x.reason })));
+      if (r.length === 0) setSearchNote("No semantic matches for that query.");
+    } catch {
+      // Graceful fallback: client-side text filter over the loaded reports.
+      const items = missing.map((m) => ({
+        id: m.id,
+        label: m.label,
+        meta: [m.boothCode, m.meta].filter(Boolean).join(" · "),
+      }));
+      const filtered = textFilterMissing(items, q);
+      setResults(filtered.map((f) => ({ id: f.id, score: null, reason: "" })));
+      setSearchNote("AI search unavailable — showing text matches.");
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  function clearSearch() {
+    setQuery("");
+    setResults(null);
+    setSearchNote(null);
+  }
+
+  const searchForm = (
+    <form className="mapsearch" onSubmit={runSearch} role="search">
+      <div className="mapsearch-field">
+        <svg
+          className="mapsearch-ico"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="M21 21l-3.6-3.6" />
+        </svg>
+        <input
+          type="text"
+          placeholder="Search missing people — describe them in any language…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          aria-label="Search missing people"
+        />
+        {query && (
+          <button
+            type="button"
+            className="mapsearch-x"
+            onClick={clearSearch}
+            aria-label="Clear search"
+          >
+            ×
+          </button>
+        )}
+      </div>
+      <button type="submit" className="btn btn-primary mapsearch-go" disabled={searching}>
+        {searching ? "Searching…" : "Search"}
+      </button>
+      {(results || searchNote) && (
+        <span className="mapsearch-status">
+          {results ? `${results.length} match${results.length === 1 ? "" : "es"}` : ""}
+          {results && searchNote ? " · " : ""}
+          {searchNote ?? ""}
+        </span>
+      )}
+    </form>
+  );
+
   return (
     <APIProvider apiKey={apiKey}>
       <div className="map-shell">
@@ -129,22 +234,57 @@ export function OperatorMap({
 
           <section className="map-panel">
             <h3>
-              Open missing <span className="ct">{missing.length}</span>
+              {results ? "Search results" : "Open missing"}{" "}
+              <span className="ct">{results ? results.length : missing.length}</span>
             </h3>
-            <p className="map-hint">Select a person to build a search plan.</p>
+            {!results && (
+              <p className="map-hint">Use the search bar above, or pick a person to plan a search.</p>
+            )}
+
             <div className="map-list">
-              {missing.map((r) => (
-                <button
-                  key={r.id}
-                  className={`map-listitem ${r.id === selectedId ? "active" : ""}`}
-                  onClick={() => setSelectedId(r.id === selectedId ? null : r.id)}
-                >
-                  <span className="nm">{r.label}</span>
-                  <span className="mt">{[r.boothCode, r.meta].filter(Boolean).join(" · ")}</span>
-                  <span className="ago">{r.ago}</span>
-                </button>
-              ))}
-              {missing.length === 0 && <div className="map-hint">No open missing reports.</div>}
+              {results
+                ? results.map((res) => {
+                    const r = missingById[res.id];
+                    if (!r) return null;
+                    return (
+                      <button
+                        key={res.id}
+                        className={`map-listitem withthumb ${res.id === selectedId ? "active" : ""}`}
+                        onClick={() => setSelectedId(res.id === selectedId ? null : res.id)}
+                      >
+                        <span className="map-thumb av-silhouette">
+                          <Avatar url={r.photo} size={16} />
+                        </span>
+                        <span className="nm">{r.label}</span>
+                        <span className="mt">
+                          {res.reason || [r.boothCode, r.meta].filter(Boolean).join(" · ")}
+                        </span>
+                        {res.score != null && (
+                          <span className="ago">{Math.round(res.score * 100)}%</span>
+                        )}
+                      </button>
+                    );
+                  })
+                : missing.map((r) => (
+                    <button
+                      key={r.id}
+                      className={`map-listitem withthumb ${r.id === selectedId ? "active" : ""}`}
+                      onClick={() => setSelectedId(r.id === selectedId ? null : r.id)}
+                    >
+                      <span className="map-thumb av-silhouette">
+                        <Avatar url={r.photo} size={16} />
+                      </span>
+                      <span className="nm">{r.label}</span>
+                      <span className="mt">{[r.boothCode, r.meta].filter(Boolean).join(" · ")}</span>
+                      <span className="ago">{r.ago}</span>
+                    </button>
+                  ))}
+              {results && results.length === 0 && (
+                <div className="map-hint">No matches — try different words.</div>
+              )}
+              {!results && missing.length === 0 && (
+                <div className="map-hint">No open missing reports.</div>
+              )}
             </div>
           </section>
 
@@ -202,6 +342,7 @@ export function OperatorMap({
         </aside>
 
         <div className="map-canvas">
+          {searchForm}
           <Map
             mapId={MAP_ID}
             defaultCenter={KUMBH_CENTER}
@@ -221,6 +362,7 @@ export function OperatorMap({
               showMissing={layers.missing}
               showFound={layers.found}
               selectedId={selectedId}
+              highlightIds={highlightIds}
               onSelectMissing={(r) => setSelectedId(r.id === selectedId ? null : r.id)}
             />
             {selected && plan && (

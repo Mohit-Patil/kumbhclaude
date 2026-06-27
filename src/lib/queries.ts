@@ -46,6 +46,7 @@ export type MapReport = {
   boothCode: string | null;
   zone: string | null;
   ago: string;
+  photo: string | null;
 };
 
 /* ---------- raw embedded row shapes ---------- */
@@ -334,13 +335,13 @@ export async function getMapReports(): Promise<{ missing: MapReport[]; found: Ma
     supabase
       .from("missing_report")
       .select(
-        "missing_report_id,last_seen_to,created_at,booth:booth!missing_report_booth_id_fkey(code,zone,lat,lng),subject:person!missing_report_subject_person_id_fkey(full_name,age,age_range,description)",
+        "missing_report_id,last_seen_to,created_at,booth:booth!missing_report_booth_id_fkey(code,zone,lat,lng),subject:person!missing_report_subject_person_id_fkey(full_name,age,age_range,description,photo(storage_ref))",
       )
       .eq("status", "open"),
     supabase
       .from("found_report")
       .select(
-        "found_report_id,found_at,created_at,booth:booth!found_report_booth_id_fkey(code,zone,lat,lng),subject:person!found_report_subject_person_id_fkey(full_name,age,age_range,description)",
+        "found_report_id,found_at,created_at,booth:booth!found_report_booth_id_fkey(code,zone,lat,lng),subject:person!found_report_subject_person_id_fkey(full_name,age,age_range,description,photo(storage_ref))",
       )
       .eq("status", "open"),
   ]);
@@ -358,6 +359,7 @@ export async function getMapReports(): Promise<{ missing: MapReport[]; found: Ma
         boothCode: r.booth?.code ?? null,
         zone: r.booth?.zone ?? null,
         ago: timeAgo(r.last_seen_to ?? r.created_at),
+        photo: photoUrl(r.subject),
       }),
     );
 
@@ -376,6 +378,7 @@ export async function getMapReports(): Promise<{ missing: MapReport[]; found: Ma
         boothCode: r.booth?.code ?? null,
         zone: r.booth?.zone ?? null,
         ago: timeAgo(r.found_at ?? r.created_at),
+        photo: photoUrl(r.subject),
       }),
     );
 

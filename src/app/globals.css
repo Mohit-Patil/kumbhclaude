@@ -1433,6 +1433,21 @@ a {
   color: var(--ink-faint);
   font-variant-numeric: tabular-nums;
 }
+/* Result rows that carry a person photo get a thumbnail column. */
+.map-listitem.withthumb {
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "ph nm ago" "ph mt mt";
+  align-items: center;
+  column-gap: 10px;
+}
+.map-thumb {
+  grid-area: ph;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  flex: 0 0 34px;
+  display: block;
+}
 .map-panel.plan {
   border-color: var(--vermilion);
 }
@@ -1542,6 +1557,109 @@ a {
   font-size: 12.5px;
   line-height: 1.45;
   color: var(--ink-soft);
+}
+
+/* ===========================================================================
+   Map AI search — floating command bar centered over the map canvas
+   =========================================================================== */
+.mapsearch {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: min(620px, calc(100% - 28px));
+  padding: 10px 12px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+}
+.mapsearch-field {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1 1 320px;
+  min-width: 0;
+  height: 44px;
+  padding: 0 16px;
+  background: var(--sand);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.mapsearch-field:focus-within {
+  background: var(--paper);
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px var(--teal-tint);
+}
+.mapsearch-ico {
+  flex: 0 0 auto;
+  color: var(--ink-faint);
+}
+.mapsearch-field:focus-within .mapsearch-ico {
+  color: var(--teal);
+}
+.mapsearch-field input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.mapsearch-field input::placeholder {
+  color: var(--ink-faint);
+}
+.mapsearch-field input:focus {
+  outline: none;
+}
+.mapsearch-x {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  color: var(--ink-faint);
+  font-size: 20px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+.mapsearch-x:hover {
+  color: var(--vermilion);
+}
+.mapsearch-go {
+  flex: 0 0 auto;
+  height: 44px;
+  padding: 0 22px;
+  border-radius: 999px;
+}
+.mapsearch-status {
+  flex: 1 1 100%;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+@media (max-width: 760px) {
+  .mapsearch {
+    top: 10px;
+    width: calc(100% - 20px);
+    padding: 9px 10px;
+    gap: 8px;
+  }
+  .mapsearch-field {
+    flex: 1 1 100%;
+  }
+  .mapsearch-go {
+    flex: 1 1 100%;
+  }
 }
 
 /* ============================================================
