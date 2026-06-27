@@ -489,6 +489,9 @@ a {
 .ti.ctrl {
   background: #e6ecf5;
 }
+.ti.map {
+  background: var(--teal-tint);
+}
 
 /* ================= MOBILE FORM SHELL (register) ================= */
 .screen-mobile {
