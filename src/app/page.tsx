@@ -65,6 +65,17 @@ const screens = [
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0E7C6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 3 4 5v16l5-2 6 2 5-2V3l-5 2-6-2z"/><path d="M9 3v16M15 5v16"/></svg>
     ),
   },
+  {
+    href: "/admin",
+    icon: "analytics",
+    title: "Analytics",
+    hi: "विश्लेषण",
+    dev: "Administration · Desktop",
+    body: "Ask the data in plain language — counts, trends over time, reunions by zone and method, time to reunite — and get instant charts.",
+    glyph: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C97D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19V5M4 19h16"/><rect x="7" y="11" width="3" height="5"/><rect x="12" y="8" width="3" height="8"/><rect x="17" y="13" width="3" height="3"/></svg>
+    ),
+  },
 ];
 
 export default function Home() {
