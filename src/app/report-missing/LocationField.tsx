@@ -53,7 +53,7 @@ function loadGoogleMaps(): Promise<void> {
 type GmapStatus = "idle" | "loading" | "ready" | "error";
 
 export default function LocationField() {
-  const [value, setValue] = useState<string>("ramkund");
+  const [value, setValue] = useState<string>("");
   const [pin, setPin] = useState<{ lat: number; lon: number } | null>(null);
   const [gmapStatus, setGmapStatus] = useState<GmapStatus>("idle");
 
@@ -133,6 +133,7 @@ export default function LocationField() {
         value={value}
         onChange={(e) => setValue(e.target.value)}
       >
+        <option value="" disabled>Select a place…</option>
         {PLACES.map((p) => (
           <option key={p.value} value={p.value}>
             {p.name}

@@ -16,12 +16,12 @@ export default function MissingForm() {
           <div className="block-head"><span className="block-num">1</span><h2><span className="dev">व्यक्ति</span><span className="en">The person</span></h2></div>
           <div className="with-photo">
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <Field dev="नाम" en="Name" optional><input className="input" name="name" placeholder="If known" defaultValue="Aarti Yadav" /></Field>
+              <Field dev="नाम" en="Name" optional><input className="input" name="name" placeholder="If known" /></Field>
               <div className="two">
-                <Field dev="उम्र" en="Age" optional><input className="input" name="age" placeholder="e.g. 7" defaultValue="7" /></Field>
-                <Field dev="लिंग" en="Gender" optional><input className="input" name="gender" defaultValue="Girl" /></Field>
+                <Field dev="उम्र" en="Age" optional><input className="input" name="age" placeholder="e.g. 7" /></Field>
+                <Field dev="लिंग" en="Gender" optional><input className="input" name="gender" placeholder="e.g. Girl" /></Field>
               </div>
-              <Field dev="पहनावा / पहचान" en="What were they wearing?"><input className="input" name="wearing" defaultValue="Red frock, yellow hairband, silver anklets" /></Field>
+              <Field dev="पहनावा / पहचान" en="What were they wearing?"><input className="input" name="wearing" placeholder="Clothes, colours, marks" /></Field>
             </div>
             <div className="field">
               <span className="field-label"><span className="field-label-text"><span className="dev">तस्वीर</span><span className="en">Photo</span></span></span>
@@ -39,18 +39,18 @@ export default function MissingForm() {
           <div className="block-head"><span className="block-num">2</span><h2><span className="dev">आख़िरी बार कहाँ व कब</span><span className="en">Last seen — where & when</span></h2></div>
           <LocationField />
           <div className="two">
-            <Field dev="समय — से" en="Time — from"><input className="input" name="lastSeenFrom" type="time" defaultValue="13:30" /></Field>
-            <Field dev="समय — तक" en="Time — to"><input className="input" name="lastSeenTo" type="time" defaultValue="13:50" /></Field>
+            <Field dev="समय — से" en="Time — from"><input className="input" name="lastSeenFrom" type="time" /></Field>
+            <Field dev="समय — तक" en="Time — to"><input className="input" name="lastSeenTo" type="time" /></Field>
           </div>
         </section>
 
         <section className="block">
           <div className="block-head"><span className="block-num">3</span><h2><span className="dev">आपका संपर्क</span><span className="en">Your contact (guardian)</span></h2></div>
           <div className="two">
-            <Field dev="फ़ोन नंबर" en="Phone number"><input className="input" name="reporterMobile" type="tel" inputMode="numeric" placeholder="+91 —" defaultValue="+91 98270 00000" /></Field>
-            <Field dev="आपका नाम" en="Your name" optional><input className="input" name="reporterName" defaultValue="Suresh Yadav" /></Field>
+            <Field dev="फ़ोन नंबर" en="Phone number"><input className="input" name="reporterMobile" type="tel" inputMode="numeric" placeholder="+91 —" /></Field>
+            <Field dev="आपका नाम" en="Your name" optional><input className="input" name="reporterName" placeholder="Your name" /></Field>
           </div>
-          <Field dev="संबंध" en="Relation" optional><input className="input" name="relation" defaultValue="Father" /></Field>
+          <Field dev="संबंध" en="Relation" optional><input className="input" name="relation" placeholder="e.g. Father" /></Field>
           <div className="note"><IconShield size={18} /><span><span className="dev">मिलते ही हम आपको कॉल करेंगे।</span> We&rsquo;ll call this number the moment a matching found-report comes in.</span></div>
         </section>
 
