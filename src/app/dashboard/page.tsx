@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Mark } from "@/components/brand";
 import { Avatar } from "@/components/avatar";
 import { getDashboardData, type QueueItem, type MatchCard } from "@/lib/queries";
+import { verdictLabel } from "@/lib/ai/verdict";
 
 export const dynamic = "force-dynamic";
 
@@ -34,10 +35,18 @@ function QCard({ kind, item }: { kind: "miss" | "found"; item: QueueItem }) {
 }
 
 function MatchBig({ m }: { m: MatchCard }) {
-  const pct = Math.round(m.confidence * 100);
-  const hi = m.confidence >= 0.8;
+  const eff = m.aiConfidence ?? m.confidence;
+  const pct = Math.round(eff * 100);
+  const hi = eff >= 0.8;
   const methodLabel =
-    m.method === "aadhaar" ? "Aadhaar match" : m.method === "phone" ? "Phone match" : "Description + age";
+    m.method === "aadhaar"
+      ? "Aadhaar match"
+      : m.method === "phone"
+        ? "Phone match"
+        : m.aiConfidence != null
+          ? "AI · description + age"
+          : "Description + age";
+  const verdict = m.aiVerdict as "likely" | "possible" | "unlikely" | null;
   return (
     <div className="matchbig">
       <div className="pair">
@@ -71,6 +80,12 @@ function MatchBig({ m }: { m: MatchCard }) {
           </div>
         </div>
       </div>
+      {m.aiRationale && (
+        <div className="airow">
+          {verdict && <span className={`vbadge ${verdict}`}>{verdictLabel(verdict)}</span>}
+          <span className="arat">{m.aiRationale}</span>
+        </div>
+      )}
       <div className="confwrap">
         <div className={`meter ${hi ? "hi" : "mid"}`}>
           <i style={{ width: `${pct}%` }} />

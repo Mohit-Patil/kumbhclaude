@@ -1,4 +1,6 @@
 import { supabase } from "./supabase";
+import { runMatchScoring } from "./ai/runMatchScoring";
+import type { ScorePartyInput } from "./ai/matchPrompt";
 
 /* ---------- view models the UI renders ---------- */
 export type Stats = {
@@ -24,6 +26,9 @@ export type MatchCard = {
   foundName: string;
   foundMeta: string;
   foundPhoto: string | null;
+  aiConfidence: number | null;
+  aiVerdict: string | null;
+  aiRationale: string | null;
 };
 export type ReunitedItem = {
   id: string;
@@ -181,26 +186,111 @@ export async function getFoundQueue(): Promise<QueueItem[]> {
   }));
 }
 
+type MatchScorePerson = PersonLite & { gender: string | null };
+type MatchScoreSide = {
+  booth: BoothLite | null;
+  subject: MatchScorePerson | null;
+} | null;
+type MatchScoreRow = {
+  match_id: string;
+  confidence: number | null;
+  match_method: string;
+  missing_report_id: string;
+  found_report_id: string;
+  missing: MatchScoreSide;
+  found: MatchScoreSide;
+};
+type Explanation = {
+  ai_confidence: number | null;
+  ai_verdict: string | null;
+  ai_rationale: string | null;
+};
+
+const pairKey = (missingId: string, foundId: string) => `${missingId}:${foundId}`;
+
+async function fetchExplanations(): Promise<Map<string, Explanation>> {
+  const { data } = await supabase
+    .from("match_explanation")
+    .select("missing_report_id,found_report_id,ai_confidence,ai_verdict,ai_rationale");
+  const rows = (data ?? []) as Array<Explanation & { missing_report_id: string; found_report_id: string }>;
+  return new Map(rows.map((e) => [pairKey(e.missing_report_id, e.found_report_id), e]));
+}
+
+function toScoreParty(side: MatchScoreSide): ScorePartyInput {
+  return {
+    name: side?.subject?.full_name ?? null,
+    age: side?.subject?.age ?? null,
+    ageRange: side?.subject?.age_range ?? null,
+    gender: side?.subject?.gender ?? null,
+    description: side?.subject?.description ?? null,
+    zone: side?.booth?.zone ?? null,
+  };
+}
+
+/** Deterministic rationale for hard (Aadhaar/phone) matches — no LLM call. */
+function templatedExplanation(method: string, confidence: number): Explanation | null {
+  if (method === "aadhaar")
+    return { ai_confidence: confidence, ai_verdict: "likely", ai_rationale: "Verified Aadhaar number match." };
+  if (method === "phone")
+    return { ai_confidence: confidence, ai_verdict: "likely", ai_rationale: "Guardian phone number match." };
+  return null;
+}
+
 export async function getCandidateMatches(): Promise<MatchCard[]> {
   const { data } = await supabase
     .from("match")
     .select(
-      `match_id,confidence,match_method,missing:missing_report!match_missing_report_id_fkey(booth:booth!missing_report_booth_id_fkey(code),subject:person!missing_report_subject_person_id_fkey(${PERSON_FIELDS})),found:found_report!match_found_report_id_fkey(booth:booth!found_report_booth_id_fkey(code),subject:person!found_report_subject_person_id_fkey(${PERSON_FIELDS}))`,
+      `match_id,confidence,match_method,missing_report_id,found_report_id,missing:missing_report!match_missing_report_id_fkey(booth:booth!missing_report_booth_id_fkey(code,zone),subject:person!missing_report_subject_person_id_fkey(${PERSON_FIELDS},gender)),found:found_report!match_found_report_id_fkey(booth:booth!found_report_booth_id_fkey(code,zone),subject:person!found_report_subject_person_id_fkey(${PERSON_FIELDS},gender))`,
     )
     .eq("status", "proposed")
     .order("confidence", { ascending: false });
-  const rows = (data ?? []) as unknown as MatchRow[];
-  return rows.map((r) => ({
-    id: r.match_id,
-    confidence: r.confidence ?? 0,
-    method: r.match_method,
-    missingName: personLabel(r.missing?.subject),
-    missingMeta: r.missing?.booth?.code ? `Reported at ${r.missing.booth.code}` : "Missing",
-    missingPhoto: photoUrl(r.missing?.subject),
-    foundName: displayName(r.found?.subject),
-    foundMeta: r.found?.booth?.code ? `Safe at ${r.found.booth.code}` : "Found",
-    foundPhoto: photoUrl(r.found?.subject),
-  }));
+  const rows = (data ?? []) as unknown as MatchScoreRow[];
+
+  // Score any attribute matches that don't yet have an AI explanation, then merge.
+  const explanations = await fetchExplanations();
+  const toScore = rows
+    .filter((r) => r.match_method === "attribute" && !explanations.has(pairKey(r.missing_report_id, r.found_report_id)))
+    .map((r) => ({
+      missingReportId: r.missing_report_id,
+      foundReportId: r.found_report_id,
+      missing: toScoreParty(r.missing),
+      found: toScoreParty(r.found),
+    }));
+  if (toScore.length > 0) {
+    const scored = await runMatchScoring(toScore);
+    for (const s of scored) {
+      explanations.set(pairKey(s.missingReportId, s.foundReportId), {
+        ai_confidence: s.ai_confidence,
+        ai_verdict: s.ai_verdict,
+        ai_rationale: s.ai_rationale,
+      });
+    }
+  }
+
+  const cards = rows.map((r): MatchCard => {
+    const confidence = r.confidence ?? 0;
+    const ai =
+      templatedExplanation(r.match_method, confidence) ??
+      explanations.get(pairKey(r.missing_report_id, r.found_report_id)) ??
+      null;
+    return {
+      id: r.match_id,
+      confidence,
+      method: r.match_method,
+      missingName: personLabel(r.missing?.subject),
+      missingMeta: r.missing?.booth?.code ? `Reported at ${r.missing.booth.code}` : "Missing",
+      missingPhoto: photoUrl(r.missing?.subject),
+      foundName: displayName(r.found?.subject),
+      foundMeta: r.found?.booth?.code ? `Safe at ${r.found.booth.code}` : "Found",
+      foundPhoto: photoUrl(r.found?.subject),
+      aiConfidence: ai?.ai_confidence ?? null,
+      aiVerdict: ai?.ai_verdict ?? null,
+      aiRationale: ai?.ai_rationale ?? null,
+    };
+  });
+
+  // Re-rank by AI confidence when present, falling back to the SQL confidence.
+  return cards.sort((a, b) => (b.aiConfidence ?? b.confidence) - (a.aiConfidence ?? a.confidence));
 }
 
 export async function getReunited(): Promise<ReunitedItem[]> {
