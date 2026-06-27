@@ -154,6 +154,52 @@ export function OperatorMap({
 
   return (
     <APIProvider apiKey={apiKey}>
+      <form className="mapsearch" onSubmit={runSearch} role="search">
+        <div className="mapsearch-field">
+          <svg
+            className="mapsearch-ico"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-3.6-3.6" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search missing people — describe them in any language…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Search missing people"
+          />
+          {query && (
+            <button
+              type="button"
+              className="mapsearch-x"
+              onClick={clearSearch}
+              aria-label="Clear search"
+            >
+              ×
+            </button>
+          )}
+        </div>
+        <button type="submit" className="btn btn-primary mapsearch-go" disabled={searching}>
+          {searching ? "Searching…" : "Search"}
+        </button>
+        {(results || searchNote) && (
+          <span className="mapsearch-status">
+            {results ? `${results.length} match${results.length === 1 ? "" : "es"}` : ""}
+            {results && searchNote ? " · " : ""}
+            {searchNote ?? ""}
+          </span>
+        )}
+      </form>
       <div className="map-shell">
         <aside className="map-rail">
           <section className="map-toggles">
@@ -181,24 +227,9 @@ export function OperatorMap({
               {results ? "Search results" : "Open missing"}{" "}
               <span className="ct">{results ? results.length : missing.length}</span>
             </h3>
-            <form className="map-search" onSubmit={runSearch}>
-              <input
-                type="text"
-                placeholder="Search by description, name, age…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-              <button type="submit" className="btn btn-primary btn-sm" disabled={searching}>
-                {searching ? "…" : "Search"}
-              </button>
-              {results && (
-                <button type="button" className="btn btn-ghost btn-sm" onClick={clearSearch}>
-                  Clear
-                </button>
-              )}
-            </form>
-            {searchNote && <p className="map-hint">{searchNote}</p>}
-            {!results && <p className="map-hint">AI-ranks open missing reports against your query.</p>}
+            {!results && (
+              <p className="map-hint">Use the search bar above, or pick a person to plan a search.</p>
+            )}
 
             <div className="map-list">
               {results
