@@ -115,6 +115,9 @@ export default async function Dashboard() {
             <div className="k">Source</div>
             <div className="v mono">Supabase · ap-south-1</div>
           </div>
+          <Link href="/map" className="titlechip" style={{ textDecoration: "none" }}>
+            Search map →
+          </Link>
           <div className="duty">
             <div className="cell" style={{ textAlign: "right" }}>
               <div className="k">Supervisor</div>
