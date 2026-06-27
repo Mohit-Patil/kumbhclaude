@@ -11,6 +11,7 @@ export function ReportLayer({
   showMissing,
   showFound,
   selectedId,
+  highlightIds,
   onSelectMissing,
 }: {
   missing: MapReport[];
@@ -18,28 +19,33 @@ export function ReportLayer({
   showMissing: boolean;
   showFound: boolean;
   selectedId: string | null;
+  highlightIds?: Set<string> | null;
   onSelectMissing: (r: MapReport) => void;
 }) {
   const [activeFound, setActiveFound] = useState<MapReport | null>(null);
+  const searchActive = highlightIds != null;
 
   return (
     <>
       {showMissing &&
         missing.map((r) => {
           const selected = r.id === selectedId;
+          const matched = !searchActive || highlightIds!.has(r.id);
+          const emphasized = selected || (searchActive && matched);
+          const scale = emphasized ? 1.4 : searchActive ? 0.8 : 1;
           return (
             <AdvancedMarker
               key={r.id}
               position={{ lat: r.lat, lng: r.lng }}
               title={`Missing · ${r.label}`}
-              zIndex={selected ? 1000 : undefined}
+              zIndex={emphasized ? 1000 : undefined}
               onClick={() => onSelectMissing(r)}
             >
               <Pin
-                background="#d33a2c"
-                borderColor={selected ? "#16302b" : "#ffffff"}
+                background={searchActive && !matched ? "#e7b7b1" : "#d33a2c"}
+                borderColor={emphasized ? "#16302b" : "#ffffff"}
                 glyphColor="#ffffff"
-                scale={selected ? 1.4 : 1}
+                scale={scale}
               />
             </AdvancedMarker>
           );
