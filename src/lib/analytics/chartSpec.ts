@@ -74,3 +74,11 @@ export function normalizeChartSpec(input: unknown): ChartSpec | null {
   });
   return { type: "pie", title, data: pieData };
 }
+
+/** Normalize an array of specs (e.g. a saved dashboard), dropping any invalid entries. */
+export function normalizeCharts(input: unknown): ChartSpec[] {
+  if (!Array.isArray(input)) return [];
+  return input
+    .map((c) => normalizeChartSpec(c))
+    .filter((c): c is ChartSpec => c !== null);
+}

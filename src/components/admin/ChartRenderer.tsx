@@ -27,7 +27,7 @@ function renderChart(spec: ChartSpec): ReactElement {
   if (spec.type === "pie") {
     return (
       <PieChart>
-        <Pie data={spec.data} dataKey="value" nameKey="name" outerRadius={88} label>
+        <Pie data={spec.data} dataKey="value" nameKey="name" outerRadius={88} label isAnimationActive={false}>
           {spec.data.map((_, i) => (
             <Cell key={i} fill={COLORS[i % COLORS.length]} />
           ))}
@@ -52,7 +52,7 @@ function renderChart(spec: ChartSpec): ReactElement {
       <LineChart data={spec.data}>
         {axes}
         {series.map((s, i) => (
-          <Line key={s.key} type="monotone" dataKey={s.key} name={s.label} stroke={COLORS[i % COLORS.length]} strokeWidth={2} dot={false} />
+          <Line key={s.key} type="monotone" dataKey={s.key} name={s.label} stroke={COLORS[i % COLORS.length]} strokeWidth={2} dot={false}  isAnimationActive={false} />
         ))}
       </LineChart>
     );
@@ -62,7 +62,7 @@ function renderChart(spec: ChartSpec): ReactElement {
       <AreaChart data={spec.data}>
         {axes}
         {series.map((s, i) => (
-          <Area key={s.key} type="monotone" dataKey={s.key} name={s.label} stroke={COLORS[i % COLORS.length]} fill={COLORS[i % COLORS.length]} fillOpacity={0.18} />
+          <Area key={s.key} type="monotone" dataKey={s.key} name={s.label} stroke={COLORS[i % COLORS.length]} fill={COLORS[i % COLORS.length]} fillOpacity={0.18}  isAnimationActive={false} />
         ))}
       </AreaChart>
     );
@@ -71,16 +71,31 @@ function renderChart(spec: ChartSpec): ReactElement {
     <BarChart data={spec.data}>
       {axes}
       {series.map((s, i) => (
-        <Bar key={s.key} dataKey={s.key} name={s.label} fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]} />
+        <Bar key={s.key} dataKey={s.key} name={s.label} fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]}  isAnimationActive={false} />
       ))}
     </BarChart>
   );
 }
 
-export function ChartRenderer({ spec }: { spec: ChartSpec }) {
+export function ChartRenderer({
+  spec,
+  onPin,
+  pinned,
+}: {
+  spec: ChartSpec;
+  onPin?: () => void;
+  pinned?: boolean;
+}) {
   return (
     <figure className="achart">
-      <figcaption>{spec.title}</figcaption>
+      <figcaption>
+        <span>{spec.title}</span>
+        {onPin && (
+          <button type="button" className="achart-pin" onClick={onPin} disabled={pinned}>
+            {pinned ? "✓ Pinned" : "📌 Pin"}
+          </button>
+        )}
+      </figcaption>
       <div className="achart-box">
         <ResponsiveContainer width="100%" height={240}>
           {renderChart(spec)}

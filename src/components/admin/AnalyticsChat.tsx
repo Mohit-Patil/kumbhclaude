@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { askAnalytics, type AnalyticsAnswer } from "@/app/admin/askAction";
+import { saveDashboardAction } from "@/app/admin/saveAction";
+import type { ChartSpec } from "@/lib/analytics/chartSpec";
 import { ChartRenderer } from "./ChartRenderer";
 
 type Turn =
@@ -21,6 +24,27 @@ export function AnalyticsChat() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [pinned, setPinned] = useState<ChartSpec[]>([]);
+  const [dashName, setDashName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
+
+  function pin(spec: ChartSpec) {
+    setSavedId(null);
+    setPinned((p) => (p.includes(spec) ? p : [...p, spec]));
+  }
+
+  async function saveDashboard() {
+    if (pinned.length === 0 || saving) return;
+    setSaving(true);
+    const res = await saveDashboardAction(dashName || "Dashboard", pinned);
+    setSaving(false);
+    if (res.id) {
+      setSavedId(res.id);
+      setPinned([]);
+      setDashName("");
+    }
+  }
 
   async function ask(question: string) {
     const q = question.trim();
@@ -71,7 +95,7 @@ export function AnalyticsChat() {
                 <>
                   {turn.answer && <p className="achat-answer">{turn.answer}</p>}
                   {turn.charts.map((c, j) => (
-                    <ChartRenderer key={j} spec={c} />
+                    <ChartRenderer key={j} spec={c} onPin={() => pin(c)} pinned={pinned.includes(c)} />
                   ))}
                 </>
               )}
@@ -79,6 +103,34 @@ export function AnalyticsChat() {
           ),
         )}
       </div>
+
+      {savedId && (
+        <div className="achat-saved">
+          Dashboard saved.{" "}
+          <Link href={`/admin/dashboards/${savedId}`}>Open it →</Link>
+        </div>
+      )}
+
+      {pinned.length > 0 && (
+        <div className="achat-tray">
+          <span className="achat-tray-count">
+            {pinned.length} chart{pinned.length === 1 ? "" : "s"} pinned
+          </span>
+          <input
+            type="text"
+            placeholder="Dashboard name…"
+            value={dashName}
+            onChange={(e) => setDashName(e.target.value)}
+            aria-label="Dashboard name"
+          />
+          <button type="button" className="btn btn-primary btn-sm" onClick={saveDashboard} disabled={saving}>
+            {saving ? "Saving…" : "Save dashboard"}
+          </button>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPinned([])}>
+            Clear
+          </button>
+        </div>
+      )}
 
       <form
         className="achat-bar"

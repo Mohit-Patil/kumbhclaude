@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizeChartSpec, MAX_POINTS } from "./chartSpec";
+import { normalizeChartSpec, normalizeCharts, MAX_POINTS } from "./chartSpec";
 
 const validBar = {
   type: "bar",
@@ -73,5 +73,18 @@ describe("normalizeChartSpec", () => {
   it("returns null for non-object input", () => {
     expect(normalizeChartSpec(null)).toBeNull();
     expect(normalizeChartSpec("x")).toBeNull();
+  });
+});
+
+describe("normalizeCharts", () => {
+  it("keeps only valid specs from an array, dropping invalid ones", () => {
+    const out = normalizeCharts([validBar, { type: "scatter" }, null, validBar]);
+    expect(out).toHaveLength(2);
+    expect(out.every((c) => c.type === "bar")).toBe(true);
+  });
+
+  it("returns an empty array for non-array input", () => {
+    expect(normalizeCharts("nope")).toEqual([]);
+    expect(normalizeCharts(null)).toEqual([]);
   });
 });
