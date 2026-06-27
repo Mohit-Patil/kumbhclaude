@@ -149,13 +149,21 @@ export async function getStats(): Promise<Stats> {
   return { openMissing, openFound, candidates, reunitedToday };
 }
 
+/**
+ * Active reports still being searched for. Includes both `open` and `matched`:
+ * a `matched` report only has a *proposed* candidate (not a confirmed reunion),
+ * so the person is still missing. Only `reunited` reports drop off. Shared by
+ * the dashboard missing queue and the map.
+ */
+const ACTIVE_STATUSES = ["open", "matched"];
+
 export async function getMissingQueue(): Promise<QueueItem[]> {
   const { data } = await supabase
     .from("missing_report")
     .select(
       `missing_report_id,last_seen_to,created_at,booth:booth!missing_report_booth_id_fkey(code,zone),subject:person!missing_report_subject_person_id_fkey(${PERSON_FIELDS})`,
     )
-    .eq("status", "open")
+    .in("status", ACTIVE_STATUSES)
     .order("last_seen_to", { ascending: false });
   const rows = (data ?? []) as unknown as MissingRow[];
   return rows.map((r) => ({
@@ -325,15 +333,6 @@ type MapFoundRow = {
   booth: BoothGeo | null;
   subject: PersonLite | null;
 };
-
-/**
- * Active missing/found reports placed on the map via their booth's coordinates.
- * Includes both `open` and `matched` reports: a `matched` report only has a
- * *proposed* candidate (not a confirmed reunion), so the person is still being
- * searched for and belongs on the map. Only `reunited` reports drop off.
- * Reports whose booth has no location are omitted (the map can't plot them).
- */
-const ACTIVE_STATUSES = ["open", "matched"];
 
 export async function getMapReports(): Promise<{ missing: MapReport[]; found: MapReport[] }> {
   const [missingRes, foundRes] = await Promise.all([

@@ -171,12 +171,12 @@ export default async function Dashboard() {
         <div className="col">
           <div className="colhead">
             <span className="sw" style={{ background: "var(--vermilion)" }} />
-            Missing · open <span className="ct">{missingQueue.length}</span>
+            Missing · active <span className="ct">{missingQueue.length}</span>
           </div>
           {missingQueue.map((it) => (
             <QCard key={it.id} kind="miss" item={it} />
           ))}
-          {missingQueue.length === 0 && <div className="hint">No open missing reports.</div>}
+          {missingQueue.length === 0 && <div className="hint">No active missing reports.</div>}
         </div>
 
         {/* CENTER: confluence + matches */}
