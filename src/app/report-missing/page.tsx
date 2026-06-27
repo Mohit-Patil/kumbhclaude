@@ -1,4 +1,4 @@
-import { AgentBand } from "@/components/brand";
+import { BoothTop } from "@/components/ui";
 import { Avatar } from "@/components/avatar";
 import { getCandidateMatches } from "@/lib/queries";
 import LocationField from "./LocationField";
@@ -6,179 +6,117 @@ import { fileMissingReport } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function ReportMissing() {
+function FieldLabel({ dev, en, required, optional }: { dev: string; en: string; required?: boolean; optional?: boolean }) {
+  return (
+    <span className="field-label">
+      <span className="field-label-text"><span className="dev">{dev}</span><span className="en">{en}</span></span>
+      {required && <span className="req">●</span>}
+      {optional && <span className="opt"><span className="dev">वैकल्पिक</span> Optional</span>}
+    </span>
+  );
+}
+
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ kiosk?: string }>;
+}) {
+  const sp = await searchParams;
+  const kiosk = sp?.kiosk === "1";
   const matches = await getCandidateMatches();
 
   return (
-    <div className="agent">
-      <AgentBand title="Report missing" titleHi="गुमशुदा" />
+    <div className="civic">
+      <BoothTop kiosk={kiosk} titleDev="गुमशुदा की सूचना" titleEn="Report missing" />
 
-      <div className="work">
-        <form className="card formcard" action={fileMissingReport}>
-          <div className="fhead">
-            <div>
-              <div className="eyebrow">Missing person report</div>
-              <h1 className="title">
-                Who has been separated?
-                <span className="hi">कौन बिछड़ा है?</span>
-              </h1>
-            </div>
-            <span className="chip missing">
-              <span className="dot" />
-              Active search
-            </span>
-          </div>
+      <main className="civic-main civic-wide civic-tight">
+        <div className="civic-head">
+          <h1><span className="dev">कौन बिछड़ गया है?</span><span className="en">Who has been separated?</span></h1>
+          <p><span className="dev">जल्दबाज़ी ठीक है। फ़ोटो और आख़िरी जगह सबसे ज़रूरी हैं।</span> Take your time. A photo and the last-seen place matter most.</p>
+        </div>
 
-          <div className="sec">
-            <div className="with-photo">
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                <div className="field">
-                  <label>
-                    Name <span className="hi">नाम</span>
-                    <span className="req">*</span>
-                  </label>
-                  <input className="input" name="name" defaultValue="Aarti Yadav" />
-                </div>
-                <div className="grid2">
-                  <div className="field">
-                    <label>
-                      Age <span className="hi">उम्र</span>
-                    </label>
-                    <input className="input" name="age" defaultValue="7 years" />
+        <div className="work2">
+          {/* LEFT — the form */}
+          <form action={fileMissingReport} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <section className="block">
+              <div className="block-head"><span className="block-num">1</span><h2><span className="dev">व्यक्ति</span><span className="en">The person</span></h2></div>
+              <div className="with-photo">
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  <div className="field"><FieldLabel dev="नाम" en="Name" optional /><input className="input" name="name" placeholder="If known" defaultValue="Aarti Yadav" /></div>
+                  <div className="two">
+                    <div className="field"><FieldLabel dev="उम्र" en="Age" optional /><input className="input" name="age" placeholder="e.g. 7" defaultValue="7" /></div>
+                    <div className="field"><FieldLabel dev="लिंग" en="Gender" optional /><input className="input" name="gender" defaultValue="Girl" /></div>
                   </div>
-                  <div className="field">
-                    <label>
-                      Gender <span className="hi">लिंग</span>
-                    </label>
-                    <input className="input" name="gender" defaultValue="Girl" />
-                  </div>
+                  <div className="field"><FieldLabel dev="पहनावा / पहचान" en="What were they wearing?" /><input className="input" name="wearing" defaultValue="Red frock, yellow hairband, silver anklets" /></div>
                 </div>
                 <div className="field">
-                  <label>
-                    What were they wearing? <span className="hi">पहनावा</span>
-                    <span className="req">*</span>
-                  </label>
-                  <input
-                    className="input"
-                    name="wearing"
-                    defaultValue="Red frock, yellow hairband, silver anklets"
-                  />
+                  <FieldLabel dev="तस्वीर" en="Photo" />
+                  <div className="photo">
+                    <div className="photo-empty" style={{ cursor: "default" }}>
+                      <span className="photo-ico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3 8a2 2 0 012-2h2l1.5-2h7L17 6h2a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><circle cx="12" cy="12.5" r="3.4" /></svg></span>
+                      <span className="photo-lab"><span className="dev">बूथ पर फ़ोटो लें</span><span className="en">Capture at booth</span></span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="field">
-                <label>
-                  Photo <span className="opt">If any</span>
-                </label>
-                <div className="shot photo-big">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8A9690" strokeWidth="1.9" aria-hidden>
-                    <rect x="3" y="6" width="18" height="13" rx="3" />
-                    <circle cx="12" cy="12.5" r="3.2" />
-                    <path d="M8 6l1.5-2h5L16 6" />
-                  </svg>
-                  <div className="lab">Take or<br />upload photo</div>
-                </div>
-              </div>
-            </div>
-          </div>
+            </section>
 
-          <div className="sec bt">
-            <div className="eyebrow">Last seen</div>
-            <div className="grid2">
-              <div className="field">
-                <label>
-                  Between <span className="hi">समय</span>
-                </label>
-                <div className="grid2">
-                  <input className="input mono" name="lastSeenFrom" defaultValue="13:30" />
-                  <input className="input mono" name="lastSeenTo" defaultValue="13:50" />
-                </div>
-                <span className="hint">Approximate window is fine.</span>
-              </div>
+            <section className="block">
+              <div className="block-head"><span className="block-num">2</span><h2><span className="dev">आख़िरी बार कहाँ व कब</span><span className="en">Last seen — where & when</span></h2></div>
               <LocationField />
-            </div>
-          </div>
+              <div className="two">
+                <div className="field"><FieldLabel dev="समय — से" en="Time — from" /><input className="input" name="lastSeenFrom" type="time" defaultValue="13:30" /></div>
+                <div className="field"><FieldLabel dev="समय — तक" en="Time — to" /><input className="input" name="lastSeenTo" type="time" defaultValue="13:50" /></div>
+              </div>
+            </section>
 
-          <div className="sec bt">
-            <div className="eyebrow">Reported by — parent / guardian</div>
-            <div className="grid3">
-              <div className="field">
-                <label>
-                  Name <span className="req">*</span>
-                </label>
-                <input className="input" name="reporterName" defaultValue="Suresh Yadav" />
+            <section className="block">
+              <div className="block-head"><span className="block-num">3</span><h2><span className="dev">आपका संपर्क</span><span className="en">Your contact (guardian)</span></h2></div>
+              <div className="two">
+                <div className="field"><FieldLabel dev="फ़ोन नंबर" en="Phone number" /><input className="input" name="reporterMobile" type="tel" inputMode="numeric" placeholder="+91 —" defaultValue="+91 98270 00000" /></div>
+                <div className="field"><FieldLabel dev="आपका नाम" en="Your name" optional /><input className="input" name="reporterName" defaultValue="Suresh Yadav" /></div>
               </div>
-              <div className="field">
-                <label>
-                  Mobile <span className="req">*</span>
-                </label>
-                <input className="input mono" name="reporterMobile" defaultValue="+91 98270 …" />
-              </div>
-              <div className="field">
-                <label>Relation</label>
-                <input className="input" name="relation" defaultValue="Father" />
-              </div>
-            </div>
-            <div className="secure">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <path d="M12 2l8 4v6c0 5-3.4 8.3-8 10-4.6-1.7-8-5-8-10V6l8-4z" fill="#0E7C6B" />
-                <path d="M9 12l2 2 4-4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              We&rsquo;ll call this number the moment a matching found-report comes in.
-            </div>
-          </div>
+              <div className="field"><FieldLabel dev="संबंध" en="Relation" optional /><input className="input" name="relation" defaultValue="Father" /></div>
+            </section>
 
-          <div className="factions">
-            <button type="submit" className="btn btn-danger grow btn-lg">
-              File missing report <span className="sub">सूचना दर्ज करें</span>
+            <button type="submit" className="btn btn-missing btn-block">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="11" cy="11" r="7" /><path d="M21 21l-3.5-3.5" /></svg>
+              <span className="dev">सूचना दर्ज करें</span> File missing report
             </button>
-            <button type="button" className="btn btn-ghost">Save draft</button>
-          </div>
-        </form>
+          </form>
 
-        <aside className="card panel">
-          <div className="ph2">
-            Possible matches <span className="hi">संभावित मिलान</span>
-          </div>
-          <p className="sub">
-            Live found-person candidates from the match engine, ranked by similarity.
-          </p>
-
-          {matches.map((m) => {
-            const pct = Math.round(m.confidence * 100);
-            const hi = m.confidence >= 0.8;
-            const method = m.method === "aadhaar" ? "Aadhaar" : m.method === "phone" ? "Phone" : "Description";
-            return (
-              <div className="match-card" key={m.id}>
-                <div className="ph av-silhouette">
-                  <Avatar url={m.foundPhoto} size={26} />
+          {/* RIGHT — live matches (sticky, no extra scroll) */}
+          <aside className="matches-aside">
+            <section className="block">
+              <div className="block-head"><h2><span className="dev">संभावित मिलान</span><span className="en">Possible matches</span></h2></div>
+              <p className="hint"><span className="dev">अभी मिले लोगों से तुलना।</span> Live candidates — staff confirm before reuniting.</p>
+              {matches.length === 0 ? (
+                <p className="hint">No candidate matches yet.</p>
+              ) : (
+                <div className="cand-list">
+                  {matches.slice(0, 3).map((m) => {
+                    const pct = Math.round((m.aiConfidence ?? m.confidence) * 100);
+                    const method = m.method === "aadhaar" ? "Aadhaar" : m.method === "phone" ? "Phone" : "Photo + description";
+                    return (
+                      <div className="cand" key={m.id}>
+                        <div className="ph"><Avatar url={m.foundPhoto} size={26} /></div>
+                        <div className="cand-body">
+                          <div className="nm">{m.foundName}</div>
+                          <div className="mt">{m.foundMeta}</div>
+                          <div className="meter"><i style={{ width: `${pct}%` }} /></div>
+                          <div className="confline"><span>Similarity</span><span>{pct}%</span></div>
+                          <div className="methods"><span className="mtag">{method}</span></div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div className="nm">{m.foundName}</div>
-                  <div className="mt">{m.foundMeta} · paired with {m.missingName}</div>
-                  <div className={`meter ${hi ? "hi" : "mid"}`}>
-                    <i style={{ width: `${pct}%` }} />
-                  </div>
-                  <div className="confline">
-                    <span>Similarity</span>
-                    <span className={`pct ${hi ? "hi" : "mid"}`}>{pct}% match</span>
-                  </div>
-                  <div className="methods">
-                    <span className="mtag">{method}</span>
-                    <span className="mtag">Age range</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-          {matches.length === 0 && (
-            <p className="hint">No candidate matches in the system yet.</p>
-          )}
-
-          <a className="chip ghost" style={{ justifyContent: "center" }} href="/dashboard">
-            Open full match board →
-          </a>
-        </aside>
-      </div>
+              )}
+              <a className="btn btn-ghost btn-block" href="/dashboard">Open full match board</a>
+            </section>
+          </aside>
+        </div>
+      </main>
     </div>
   );
 }

@@ -1,25 +1,19 @@
 import type { Metadata } from "next";
-import { Inter, Mukta, IBM_Plex_Mono } from "next/font/google";
+import { Noto_Sans, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+// One superfamily across scripts (constraint 5).
+const notoSans = Noto_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-const mukta = Mukta({
-  subsets: ["latin", "devanagari"],
   weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-display",
+  variable: "--font-latin",
   display: "swap",
 });
 
-const plexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-mono",
+const notoDevanagari = Noto_Sans_Devanagari({
+  subsets: ["devanagari"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-dev",
   display: "swap",
 });
 
@@ -31,14 +25,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${mukta.variable} ${plexMono.variable} h-full`}
-    >
+    <html lang="en" className={`${notoSans.variable} ${notoDevanagari.variable} h-full`}>
       <body className="min-h-full">{children}</body>
     </html>
   );

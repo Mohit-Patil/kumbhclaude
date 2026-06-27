@@ -3,107 +3,86 @@ import { Brand } from "@/components/brand";
 
 function Arrow() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M5 12h14M13 6l6 6-6 6" />
     </svg>
   );
 }
 
-const screens = [
+type Role = {
+  href: string;
+  accent: "reg" | "missing" | "found" | "match" | "map";
+  title: string; hi: string; device: string; deviceHi: string; glyph: React.ReactNode;
+};
+
+const roles: Role[] = [
   {
-    href: "/register",
-    icon: "reg",
-    title: "Register a family",
-    hi: "परिवार पंजीकरण",
-    dev: "Kiosk · Public mobile",
-    body: "Pre-register a pilgrim and the people travelling with them, so any booth can identify them if they are separated.",
-    glyph: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0A574B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
-    ),
+    href: "/register?kiosk=1", accent: "reg",
+    title: "Register a family", hi: "परिवार पंजीकरण", device: "Self / kiosk", deviceHi: "स्वयं · कियोस्क",
+    glyph: (<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M19 8v6M22 11h-6" /></svg>),
   },
   {
-    href: "/report-missing",
-    icon: "miss",
-    title: "Report missing",
-    hi: "गुमशुदा की सूचना",
-    dev: "Booth agent · Tablet",
-    body: "File a missing-person report fast — last-seen time and place, a photo, and the guardian's contact.",
-    glyph: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A82618" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-3.5-3.5"/><path d="M11 8v3M11 14h.01"/></svg>
-    ),
+    href: "/report-missing?kiosk=1", accent: "missing",
+    title: "Report missing", hi: "गुमशुदा की सूचना", device: "Booth tablet", deviceHi: "बूथ टैबलेट",
+    glyph: (<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="11" cy="11" r="7" /><path d="M21 21l-3.5-3.5" /><path d="M11 7.5v4M11 14.5h.01" /></svg>),
   },
   {
-    href: "/report-found",
-    icon: "found",
-    title: "Report found",
-    hi: "मिला हुआ व्यक्ति",
-    dev: "Booth agent · Tablet",
-    body: "Log an unidentified person found and brought to a booth, with a photo and where they were found.",
-    glyph: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C97D00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 11-8 11s-8-5-8-11a8 8 0 0116 0z"/><circle cx="12" cy="10" r="3"/></svg>
-    ),
+    href: "/report-found?kiosk=1", accent: "found",
+    title: "Report found", hi: "मिला हुआ व्यक्ति", device: "Booth tablet", deviceHi: "बूथ टैबलेट",
+    glyph: (<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M20 10c0 6-8 11-8 11s-8-5-8-11a8 8 0 0116 0z" /><circle cx="12" cy="10" r="3" /></svg>),
   },
   {
-    href: "/dashboard",
-    icon: "ctrl",
-    title: "Match & reunite",
-    hi: "मिलान व पुनर्मिलन",
-    dev: "Control room · Desktop",
-    body: "Review candidate matches where missing and found reports meet, confirm a reunion, and track every case.",
-    glyph: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#39517d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 4v7a5 5 0 005 5 5 5 0 005-5V4"/><circle cx="7" cy="4" r="1.6"/><circle cx="17" cy="4" r="1.6"/><circle cx="12" cy="20" r="1.8"/></svg>
-    ),
+    href: "/dashboard", accent: "match",
+    title: "Match & reunite", hi: "मिलान व पुनर्मिलन", device: "Control room", deviceHi: "नियंत्रण कक्ष",
+    glyph: (<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M7 4v7a5 5 0 0010 0V4" /><circle cx="7" cy="4" r="1.7" /><circle cx="17" cy="4" r="1.7" /><circle cx="12" cy="20" r="2" /><path d="M12 16v2" /></svg>),
   },
   {
-    href: "/map",
-    icon: "map",
-    title: "Search map",
-    hi: "खोज नक्शा",
-    dev: "Control room · Live map",
-    body: "Plot missing and found reports on the city map with CCTV, police and crowd choke points — then build a search plan for any case.",
-    glyph: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0E7C6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 3 4 5v16l5-2 6 2 5-2V3l-5 2-6-2z"/><path d="M9 3v16M15 5v16"/></svg>
-    ),
+    href: "/map", accent: "map",
+    title: "Search map", hi: "खोज नक्शा", device: "Operator", deviceHi: "ऑपरेटर",
+    glyph: (<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M9 4l6 2 6-2v14l-6 2-6-2-6 2V6z" /><path d="M9 4v14M15 6v14" /></svg>),
   },
 ];
 
 export default function Home() {
   return (
-    <div className="landing">
-      <header className="hero">
-        <svg className="sangam" viewBox="0 0 200 200" fill="none" aria-hidden>
-          <path d="M30 0 C 70 80, 95 90, 100 130" stroke="#D33A2C" strokeWidth="3" strokeLinecap="round" opacity="0.7"/>
-          <path d="M170 0 C 130 80, 105 90, 100 130" stroke="#F2A310" strokeWidth="3" strokeLinecap="round" opacity="0.8"/>
-          <path d="M100 130 L100 200" stroke="#fff" strokeWidth="3.4" strokeLinecap="round"/>
-        </svg>
+    <div className="launch">
+      <header className="idband">
         <Brand />
-        <h1>
-          Every separated face, <span className="accent">brought home.</span>
-        </h1>
-        <p className="lede">
-          Punarmilan is the Kumbh&rsquo;s <span className="hi">खोया–पाया</span> service — a single thread
-          connecting registration, missing reports, and found reports so any booth can reunite people in minutes.
-        </p>
+        <div className="idband-where">
+          <span className="dev">त्रिवेणी संगम · सेक्टर १–२५</span>
+          <span className="en">Triveni Sangam · Sectors 1–25</span>
+        </div>
       </header>
 
-      <main className="grid">
-        {screens.map((s) => (
-          <Link key={s.href} href={s.href} className="tile">
-            <div className={`ti ${s.icon}`}>{s.glyph}</div>
-            <div className="dev">{s.dev}</div>
-            <h3>
-              {s.title} <span className="hi">{s.hi}</span>
-            </h3>
-            <p>{s.body}</p>
-            <span className="go">
-              Open screen <Arrow />
-            </span>
-          </Link>
-        ))}
+      <main className="launch-main">
+        <div className="launch-head">
+          <h1>
+            <span className="dev">अपनी स्क्रीन चुनें</span>
+            <span className="en">Choose your screen</span>
+          </h1>
+          <p>
+            <span className="dev">हर स्क्रीन एक ही रिकॉर्ड से जुड़ी है।</span>
+            <span className="en">Every screen shares the same records.</span>
+          </p>
+        </div>
+
+        <nav className="roles" aria-label="Choose a screen">
+          {roles.map((r) => (
+            <Link key={r.href} href={r.href} className={`role role-${r.accent}`}>
+              <span className="role-ico" aria-hidden>{r.glyph}</span>
+              <span className="role-body">
+                <span className="role-device"><span className="dev">{r.deviceHi}</span><span className="en">{r.device}</span></span>
+                <span className="role-title"><span className="dev">{r.hi}</span><span className="en">{r.title}</span></span>
+              </span>
+              <span className="role-go" aria-hidden><Arrow /></span>
+            </Link>
+          ))}
+        </nav>
       </main>
 
-      <footer className="foot">
-        A prototype reunification system · Sectors 1–25, Triveni Sangam · Booth network demo
+      <footer className="launch-foot">
+        <span className="dev">पुनर्मिलन — कुंभ खोया–पाया सेवा</span>
+        <span className="en">Punarmilan — Kumbh reunification service · Booth network</span>
       </footer>
     </div>
   );
