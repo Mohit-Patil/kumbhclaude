@@ -227,45 +227,88 @@ function CameraModal({
   );
 }
 
-export function PhotoCapture({ name }: { name?: string }) {
+export function PhotoCapture({
+  name,
+  uploadOnly = false,
+  fieldName,
+  className = "",
+}: {
+  name?: string;
+  uploadOnly?: boolean;
+  /** When set, the captured image (a data URL) is submitted under this form field. */
+  fieldName?: string;
+  /** Extra classes for the box, e.g. "photo-big" for the portrait sizing. */
+  className?: string;
+}) {
   const [photo, setPhoto] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const label = name?.trim() ?? "";
   const first = label ? label.split(" ")[0] : "Photo";
   const subject = label || "this person";
 
+  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setPhoto(reader.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = ""; // allow re-selecting the same file
+  };
+
+  const inner = photo ? (
+    <>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="shot-img" src={photo} alt={`Photo of ${subject}`} />
+      <span className="shot-badge" aria-hidden>
+        <CheckIcon />
+      </span>
+      <span className="shot-cap">{first} · {uploadOnly ? "change" : "retake"}</span>
+    </>
+  ) : (
+    <>
+      {uploadOnly ? <FileIcon /> : <CameraIcon />}
+      <span className="lab">
+        {uploadOnly ? "Upload photo" : "Add photo"}
+        {label && (
+          <>
+            <br />
+            {label}
+          </>
+        )}
+      </span>
+    </>
+  );
+
+  // Carries the captured image (data URL) into the surrounding <form> so a
+  // server action can persist it. Rendered only when a field name is given.
+  const hiddenField = fieldName ? <input type="hidden" name={fieldName} value={photo ?? ""} /> : null;
+
+  // Upload-only: a label wrapping a hidden file input opens the device picker
+  // directly — no live camera modal.
+  if (uploadOnly) {
+    return (
+      <label
+        className={`shot${photo ? " done" : ""}${className ? " " + className : ""}`}
+        aria-label={photo ? `Change photo of ${subject}` : `Upload a photo of ${subject}`}
+      >
+        {inner}
+        <input type="file" accept="image/*" hidden onChange={onFile} />
+        {hiddenField}
+      </label>
+    );
+  }
+
   return (
     <>
       <button
         type="button"
-        className={`shot${photo ? " done" : ""}`}
+        className={`shot${photo ? " done" : ""}${className ? " " + className : ""}`}
         onClick={() => setOpen(true)}
         aria-label={photo ? `Retake photo of ${subject}` : `Add a photo of ${subject}`}
       >
-        {photo ? (
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="shot-img" src={photo} alt={`Captured photo of ${subject}`} />
-            <span className="shot-badge" aria-hidden>
-              <CheckIcon />
-            </span>
-            <span className="shot-cap">{first} · retake</span>
-          </>
-        ) : (
-          <>
-            <CameraIcon />
-            <span className="lab">
-              Add photo
-              {label && (
-                <>
-                  <br />
-                  {label}
-                </>
-              )}
-            </span>
-          </>
-        )}
+        {inner}
       </button>
+      {hiddenField}
       {open && (
         <CameraModal
           name={subject}

@@ -69,7 +69,7 @@ export default function ReportForm() {
               <label>
                 Photo <span className="opt">If any</span>
               </label>
-              <PhotoCapture />
+              <PhotoCapture fieldName="photo" className="photo-big" />
             </div>
           </div>
         </div>
