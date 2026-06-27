@@ -46,7 +46,7 @@ const screens = [
   {
     href: "/dashboard",
     icon: "ctrl",
-    title: "Match & reunite",
+    title: "Dashboard",
     hi: "मिलान व पुनर्मिलन",
     dev: "Control room · Desktop",
     body: "Review candidate matches where missing and found reports meet, confirm a reunion, and track every case.",
