@@ -2506,3 +2506,77 @@ button.addp:focus-visible {
     padding: 10px 28px 44px;
   }
 }
+
+/* ===========================================================================
+   Dashboard enrichment: readymade preset chips + KPI stat tiles
+   =========================================================================== */
+.buildwrap {
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.buildwrap .buildbar {
+  border-bottom: none;
+  box-shadow: none;
+  padding-bottom: 4px;
+}
+.buildbar-presets {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 2px 20px 12px;
+}
+.buildbar-presets-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.buildbar-preset {
+  border: 1px solid var(--line);
+  background: var(--sand);
+  border-radius: 999px;
+  padding: 6px 13px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--teal-deep);
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+.buildbar-preset:hover:not(:disabled) {
+  border-color: var(--teal);
+  background: var(--teal-tint);
+}
+.buildbar-preset:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* KPI stat tiles (type: "stat") */
+.statrow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 10px;
+}
+.stattile {
+  background: var(--sand);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 12px;
+  text-align: center;
+}
+.statval {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  font-size: 30px;
+  color: var(--teal-deep);
+  line-height: 1;
+}
+.statlabel {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  line-height: 1.3;
+}
