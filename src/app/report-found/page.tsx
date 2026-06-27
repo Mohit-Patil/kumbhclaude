@@ -1,4 +1,7 @@
 import { AgentBand, Silhouette } from "@/components/brand";
+import { getCandidateMatches } from "@/lib/queries";
+
+export const dynamic = "force-dynamic";
 
 function Pin({ color = "#C97D00" }: { color?: string }) {
   return (
@@ -9,7 +12,9 @@ function Pin({ color = "#C97D00" }: { color?: string }) {
   );
 }
 
-export default function ReportFound() {
+export default async function ReportFound() {
+  const matches = await getCandidateMatches();
+
   return (
     <div className="agent">
       <AgentBand title="Report found" titleHi="मिला व्यक्ति" />
@@ -145,51 +150,39 @@ export default function ReportFound() {
             Open missing reports <span className="hi">खुली सूचनाएँ</span>
           </div>
           <p className="sub">
-            Children reported missing who match this description, closest first.
+            Live candidate matches — people reported missing who may be this person.
           </p>
 
-          <div className="match-card">
-            <div className="ph av-silhouette">
-              <Silhouette size={26} />
-            </div>
-            <div style={{ flex: 1 }}>
-              <div className="nm">Aarti Yadav · 7</div>
-              <div className="mt">Father waiting at Booth K-08 · last seen 25 min ago, Akhara Marg</div>
-              <div className="meter hi">
-                <i style={{ width: "88%" }} />
+          {matches.map((m) => {
+            const pct = Math.round(m.confidence * 100);
+            const hi = m.confidence >= 0.8;
+            const method = m.method === "aadhaar" ? "Aadhaar" : m.method === "phone" ? "Phone" : "Face";
+            return (
+              <div className="match-card" key={m.id}>
+                <div className="ph av-silhouette">
+                  <Silhouette size={26} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div className="nm">{m.missingName}</div>
+                  <div className="mt">{m.missingMeta} · possible match to {m.foundName}</div>
+                  <div className={`meter ${hi ? "hi" : "mid"}`}>
+                    <i style={{ width: `${pct}%` }} />
+                  </div>
+                  <div className="confline">
+                    <span>Similarity</span>
+                    <span className={`pct ${hi ? "hi" : "mid"}`}>{pct}% match</span>
+                  </div>
+                  <div className="methods">
+                    <span className="mtag">{method}</span>
+                    <span className="mtag">Age range</span>
+                  </div>
+                </div>
               </div>
-              <div className="confline">
-                <span>Similarity</span>
-                <span className="pct hi">88% match</span>
-              </div>
-              <div className="methods">
-                <span className="mtag">Face</span>
-                <span className="mtag">Clothing</span>
-                <span className="mtag">Name</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="match-card">
-            <div className="ph av-silhouette">
-              <Silhouette size={26} />
-            </div>
-            <div style={{ flex: 1 }}>
-              <div className="nm">Unnamed girl · ~6</div>
-              <div className="mt">Reported by grandmother · last seen 1 hr ago, Ram Ghat</div>
-              <div className="meter mid">
-                <i style={{ width: "54%" }} />
-              </div>
-              <div className="confline">
-                <span>Similarity</span>
-                <span className="pct mid">54% match</span>
-              </div>
-              <div className="methods">
-                <span className="mtag">Age range</span>
-                <span className="mtag">Clothing</span>
-              </div>
-            </div>
-          </div>
+            );
+          })}
+          {matches.length === 0 && (
+            <p className="hint">No open missing reports to match yet.</p>
+          )}
 
           <a className="chip ghost" style={{ justifyContent: "center" }} href="/dashboard">
             Open full match board →

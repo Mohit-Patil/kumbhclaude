@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { Mark, Silhouette } from "@/components/brand";
+import { getDashboardData, type QueueItem, type MatchCard } from "@/lib/queries";
+
+export const dynamic = "force-dynamic";
 
 function MergeNode() {
   return (
@@ -14,32 +17,81 @@ function MergeNode() {
   );
 }
 
-function QCard({
-  kind,
-  name,
-  meta,
-  ago,
-}: {
-  kind: "miss" | "found";
-  name: string;
-  meta: string;
-  ago: string;
-}) {
+function QCard({ kind, item }: { kind: "miss" | "found"; item: QueueItem }) {
   return (
     <div className={`qcard ${kind}`}>
       <div className="ph av-silhouette">
         <Silhouette size={20} />
       </div>
       <div style={{ flex: 1 }}>
-        <div className="nm">{name}</div>
-        <div className="mt">{meta}</div>
+        <div className="nm">{item.name}</div>
+        <div className="mt">{item.meta}</div>
       </div>
-      <div className="ago">{ago}</div>
+      <div className="ago">{item.ago}</div>
     </div>
   );
 }
 
-export default function Dashboard() {
+function MatchBig({ m }: { m: MatchCard }) {
+  const pct = Math.round(m.confidence * 100);
+  const hi = m.confidence >= 0.8;
+  const methodLabel =
+    m.method === "aadhaar" ? "Aadhaar match" : m.method === "phone" ? "Phone match" : "Face + attributes";
+  return (
+    <div className="matchbig">
+      <div className="pair">
+        <div className="pp">
+          <div className="ph av-silhouette">
+            <Silhouette size={28} />
+          </div>
+          <div className="nm">{m.missingName}</div>
+          <div className="mt">
+            <span className="chip missing" style={{ padding: "3px 9px", fontSize: 10.5 }}>
+              <span className="dot" />
+              Missing
+            </span>
+            <br />
+            {m.missingMeta}
+          </div>
+        </div>
+        <MergeNode />
+        <div className="pp">
+          <div className="ph av-silhouette">
+            <Silhouette size={28} />
+          </div>
+          <div className="nm">{m.foundName}</div>
+          <div className="mt">
+            <span className="chip found" style={{ padding: "3px 9px", fontSize: 10.5 }}>
+              <span className="dot" />
+              Found
+            </span>
+            <br />
+            {m.foundMeta}
+          </div>
+        </div>
+      </div>
+      <div className="confwrap">
+        <div className={`meter ${hi ? "hi" : "mid"}`}>
+          <i style={{ width: `${pct}%` }} />
+        </div>
+        <div className="confline">
+          <span>{methodLabel}</span>
+          <span className={`pct ${hi ? "hi" : "mid"}`}>{pct}% confidence</span>
+        </div>
+      </div>
+      <div className="macts">
+        <button className="btn btn-primary btn-sm grow">
+          Confirm reunion <span className="sub">पुष्टि करें</span>
+        </button>
+        <button className="btn btn-ghost btn-sm">Not a match</button>
+      </div>
+    </div>
+  );
+}
+
+export default async function Dashboard() {
+  const { stats, missingQueue, foundQueue, matches, reunited } = await getDashboardData();
+
   return (
     <div className="dash">
       <header className="band">
@@ -57,11 +109,11 @@ export default function Dashboard() {
         <div className="ctx">
           <div className="cell">
             <div className="k">Coverage</div>
-            <div className="v mono">Sectors 1–25 · 84 booths</div>
+            <div className="v mono">Sectors 1–25 · live data</div>
           </div>
           <div className="cell">
-            <div className="k">Live</div>
-            <div className="v mono">14:08 · Day 6</div>
+            <div className="k">Source</div>
+            <div className="v mono">Supabase · ap-south-1</div>
           </div>
           <div className="duty">
             <div className="cell" style={{ textAlign: "right" }}>
@@ -75,19 +127,19 @@ export default function Dashboard() {
 
       <div className="stats">
         <div className="stat miss">
-          <div className="n">23</div>
+          <div className="n">{stats.openMissing}</div>
           <div className="k">Open <b>missing</b> right now</div>
         </div>
         <div className="stat found">
-          <div className="n">17</div>
+          <div className="n">{stats.openFound}</div>
           <div className="k">Found, <b>awaiting</b> a match</div>
         </div>
         <div className="stat matched">
-          <div className="n">8</div>
+          <div className="n">{stats.candidates}</div>
           <div className="k">Candidate <b>matches</b> to confirm</div>
         </div>
         <div className="stat reunited">
-          <div className="n">142</div>
+          <div className="n">{stats.reunitedToday}</div>
           <div className="k"><b>Reunited</b> today</div>
         </div>
       </div>
@@ -97,12 +149,12 @@ export default function Dashboard() {
         <div className="col">
           <div className="colhead">
             <span className="sw" style={{ background: "var(--vermilion)" }} />
-            Missing · open <span className="ct">23</span>
+            Missing · open <span className="ct">{missingQueue.length}</span>
           </div>
-          <QCard kind="miss" name="Aarti Yadav · 7" meta="Akhara Marg · red frock" ago="25m" />
-          <QCard kind="miss" name="Ramesh Patel · 68" meta="Sector 4 · disoriented, white kurta" ago="38m" />
-          <QCard kind="miss" name="Unnamed boy · ~5" meta="Sangam ghat · blue shirt" ago="52m" />
-          <QCard kind="miss" name="Lakshmi Bai · 74" meta="Sector 12 · green saree" ago="1h 10m" />
+          {missingQueue.map((it) => (
+            <QCard key={it.id} kind="miss" item={it} />
+          ))}
+          {missingQueue.length === 0 && <div className="hint">No open missing reports.</div>}
         </div>
 
         {/* CENTER: confluence + matches */}
@@ -115,99 +167,23 @@ export default function Dashboard() {
             </svg>
             <div>
               <h2>Candidate matches</h2>
-              <p>Where a missing report and a found report meet · 8 pairs awaiting confirmation</p>
+              <p>
+                Where a missing report and a found report meet ·{" "}
+                {matches.length} pair{matches.length === 1 ? "" : "s"} awaiting confirmation
+              </p>
             </div>
           </div>
 
-          <div className="matchbig">
-            <div className="pair">
-              <div className="pp">
-                <div className="ph av-silhouette">
-                  <Silhouette size={28} />
-                </div>
-                <div className="nm">Aarti Yadav · 7</div>
-                <div className="mt">
-                  <span className="chip missing" style={{ padding: "3px 9px", fontSize: 10.5 }}>
-                    <span className="dot" />Missing
-                  </span>
-                  <br />Father at K-08
-                </div>
-              </div>
-              <MergeNode />
-              <div className="pp">
-                <div className="ph av-silhouette">
-                  <Silhouette size={28} />
-                </div>
-                <div className="nm">Unidentified · ~7</div>
-                <div className="mt">
-                  <span className="chip found" style={{ padding: "3px 9px", fontSize: 10.5 }}>
-                    <span className="dot" />Found
-                  </span>
-                  <br />Safe at K-14
-                </div>
+          {matches.map((m) => (
+            <MatchBig key={m.id} m={m} />
+          ))}
+          {matches.length === 0 && (
+            <div className="matchbig">
+              <div className="hint" style={{ textAlign: "center", padding: "8px 0" }}>
+                No candidate matches right now.
               </div>
             </div>
-            <div className="confwrap">
-              <div className="meter hi">
-                <i style={{ width: "88%" }} />
-              </div>
-              <div className="confline">
-                <span>Face · clothing · name spoken</span>
-                <span className="pct hi">88% confidence</span>
-              </div>
-            </div>
-            <div className="macts">
-              <button className="btn btn-primary btn-sm grow">
-                Confirm reunion <span className="sub">पुष्टि करें</span>
-              </button>
-              <button className="btn btn-ghost btn-sm">Not a match</button>
-            </div>
-          </div>
-
-          <div className="matchbig">
-            <div className="pair">
-              <div className="pp">
-                <div className="ph av-silhouette">
-                  <Silhouette size={28} />
-                </div>
-                <div className="nm">Ramesh Patel · 68</div>
-                <div className="mt">
-                  <span className="chip missing" style={{ padding: "3px 9px", fontSize: 10.5 }}>
-                    <span className="dot" />Missing
-                  </span>
-                  <br />Son at K-31
-                </div>
-              </div>
-              <MergeNode />
-              <div className="pp">
-                <div className="ph av-silhouette">
-                  <Silhouette size={28} />
-                </div>
-                <div className="nm">Elderly man · 65–70</div>
-                <div className="mt">
-                  <span className="chip found" style={{ padding: "3px 9px", fontSize: 10.5 }}>
-                    <span className="dot" />Found
-                  </span>
-                  <br />Medical tent M-3
-                </div>
-              </div>
-            </div>
-            <div className="confwrap">
-              <div className="meter mid">
-                <i style={{ width: "63%" }} />
-              </div>
-              <div className="confline">
-                <span>Face · age range · sector</span>
-                <span className="pct mid">63% confidence</span>
-              </div>
-            </div>
-            <div className="macts">
-              <button className="btn btn-primary btn-sm grow">
-                Confirm reunion <span className="sub">पुष्टि करें</span>
-              </button>
-              <button className="btn btn-ghost btn-sm">Not a match</button>
-            </div>
-          </div>
+          )}
 
           <div className="reunited">
             <h3>
@@ -217,22 +193,17 @@ export default function Dashboard() {
               Reunited today <span className="hi" style={{ fontWeight: 500, color: "var(--teal)" }}>आज के पुनर्मिलन</span>
             </h3>
             <div className="rfeed">
-              <div className="rrow">
-                <span className="chip reunited" style={{ padding: "3px 9px", fontSize: 10.5 }}>
-                  <span className="dot" />
-                </span>
-                <span className="nm">Pooja Sahni · 6</span>
-                <span style={{ color: "var(--ink-faint)" }}>→ mother, Booth K-02</span>
-                <span className="tm">4 min ago</span>
-              </div>
-              <div className="rrow">
-                <span className="chip reunited" style={{ padding: "3px 9px", fontSize: 10.5 }}>
-                  <span className="dot" />
-                </span>
-                <span className="nm">Mohan Lal · 71</span>
-                <span style={{ color: "var(--ink-faint)" }}>→ grandson, Sector 6</span>
-                <span className="tm">19 min ago</span>
-              </div>
+              {reunited.map((r) => (
+                <div className="rrow" key={r.id}>
+                  <span className="chip reunited" style={{ padding: "3px 9px", fontSize: 10.5 }}>
+                    <span className="dot" />
+                  </span>
+                  <span className="nm">{r.name}</span>
+                  <span style={{ color: "var(--ink-faint)" }}>→ {r.via}</span>
+                  <span className="tm">{r.ago} ago</span>
+                </div>
+              ))}
+              {reunited.length === 0 && <div className="hint">No reunions logged yet today.</div>}
             </div>
           </div>
         </div>
@@ -241,12 +212,12 @@ export default function Dashboard() {
         <div className="col">
           <div className="colhead">
             <span className="sw" style={{ background: "var(--marigold)" }} />
-            Found · open <span className="ct">17</span>
+            Found · open <span className="ct">{foundQueue.length}</span>
           </div>
-          <QCard kind="found" name="Unidentified · ~7" meta="Booth K-14 · red frock, crying" ago="12m" />
-          <QCard kind="found" name="Elderly man · 65–70" meta="Medical tent M-3 · white kurta" ago="20m" />
-          <QCard kind="found" name="Boy · 4–6" meta="Booth K-21 · blue shirt, no shoes" ago="44m" />
-          <QCard kind="found" name="Woman · ~70" meta="Sector 9 · green saree, confused" ago="1h" />
+          {foundQueue.map((it) => (
+            <QCard key={it.id} kind="found" item={it} />
+          ))}
+          {foundQueue.length === 0 && <div className="hint">No open found reports.</div>}
         </div>
       </div>
     </div>
