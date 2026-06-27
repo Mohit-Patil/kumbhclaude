@@ -47,6 +47,22 @@ describe("normalizeChartSpec", () => {
     ]);
   });
 
+  it("accepts a stat (KPI) spec, coercing data to {name, value}", () => {
+    const out = normalizeChartSpec({
+      type: "stat",
+      title: "Headline",
+      data: [
+        { label: "Reunion rate", val: 32 },
+        { label: "Open minors", val: 3 },
+      ],
+    });
+    expect(out?.type).toBe("stat");
+    expect(out!.data).toEqual([
+      { name: "Reunion rate", value: 32 },
+      { name: "Open minors", value: 3 },
+    ]);
+  });
+
   it("rejects an unknown chart type", () => {
     expect(normalizeChartSpec({ ...validBar, type: "scatter" })).toBeNull();
   });
