@@ -134,6 +134,9 @@ export default async function Dashboard() {
           <Link href="/map" className="titlechip" style={{ textDecoration: "none" }}>
             Search map →
           </Link>
+          <Link href="/admin" className="titlechip" style={{ textDecoration: "none" }}>
+            Analytics →
+          </Link>
           <div className="duty">
             <div className="cell" style={{ textAlign: "right" }}>
               <div className="k">Supervisor</div>
