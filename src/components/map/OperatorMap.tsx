@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { APIProvider, Map, useMap } from "@vis.gl/react-google-maps";
-import type { MapReport } from "@/lib/queries";
+import type { MapReport, BoothPin } from "@/lib/queries";
 import { proximityPairs } from "@/lib/geo";
 import { buildSearchPlan } from "@/lib/searchPlan";
 import { textFilterMissing } from "@/lib/mapSearchFilter";
@@ -12,6 +12,7 @@ import { CctvLayer } from "./CctvLayer";
 import { HeatmapLayer } from "./HeatmapLayer";
 import { ChokeLayer } from "./ChokeLayer";
 import { PoliceLayer } from "./PoliceLayer";
+import { BoothLayer } from "./BoothLayer";
 import { ReportLayer } from "./ReportLayer";
 import { SearchRing } from "./SearchRing";
 
@@ -21,6 +22,7 @@ const PROXIMITY_THRESHOLD_M = 250;
 const CAMERA_COUNT = 6;
 
 type Layers = {
+  booths: boolean;
   cctv: boolean;
   police: boolean;
   choke: boolean;
@@ -34,6 +36,7 @@ type Layers = {
 type RailResult = { id: string; score: number | null; reason: string };
 
 const DEFAULT_LAYERS: Layers = {
+  booths: true,
   cctv: false,
   police: true,
   choke: true,
@@ -58,10 +61,12 @@ function MapController({ target }: { target: MapReport | null }) {
 export function OperatorMap({
   missing,
   found,
+  booths,
   apiKey,
 }: {
   missing: MapReport[];
   found: MapReport[];
+  booths: BoothPin[];
   apiKey: string | undefined;
 }) {
   const [layers, setLayers] = useState<Layers>(DEFAULT_LAYERS);
@@ -212,6 +217,7 @@ export function OperatorMap({
               [
                 ["missing", "Missing reports"],
                 ["found", "Found reports"],
+                ["booths", `Help booths (${booths.length})`],
                 ["choke", "Choke points"],
                 ["parking", "Parking"],
                 ["police", "Police stations"],
@@ -349,6 +355,7 @@ export function OperatorMap({
             <HeatmapLayer visible={layers.heatmap} />
             <ChokeLayer showChoke={layers.choke} showParking={layers.parking} />
             <PoliceLayer visible={layers.police} />
+            <BoothLayer booths={booths} visible={layers.booths} />
             <ReportLayer
               missing={missing}
               found={found}
