@@ -45,7 +45,7 @@ const screens = [
   },
   {
     href: "/dashboard",
-    icon: "dash",
+    icon: "ctrl",
     title: "Match & reunite",
     hi: "मिलान व पुनर्मिलन",
     dev: "Control room · Desktop",

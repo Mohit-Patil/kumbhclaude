@@ -486,7 +486,7 @@ a {
 .ti.reg {
   background: var(--teal-tint);
 }
-.ti.dash {
+.ti.ctrl {
   background: #e6ecf5;
 }
 
@@ -1208,6 +1208,14 @@ a {
 }
 
 /* ================= responsive ================= */
+@media (max-width: 1040px) {
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .board {
+    grid-template-columns: 1fr;
+  }
+}
 @media (max-width: 900px) {
   .work {
     grid-template-columns: 1fr;
@@ -1217,19 +1225,59 @@ a {
   }
   .band {
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px 16px;
     padding: 12px 18px;
   }
   .band .ctx {
     gap: 16px;
   }
 }
-@media (max-width: 1040px) {
-  .stats {
-    grid-template-columns: repeat(2, 1fr);
+/* keep context values from breaking mid-word, always */
+.band .ctx .v {
+  white-space: nowrap;
+}
+
+/* phone layout: stack every multi-column form region */
+@media (max-width: 680px) {
+  .formcard {
+    padding: 20px 18px;
+    gap: 18px;
   }
-  .board {
+  .fhead {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .with-photo {
     grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .photo-big {
+    width: 100%;
+    height: 150px;
+  }
+  .grid2,
+  .grid3 {
+    grid-template-columns: 1fr;
+  }
+  /* but keep tight paired inputs (e.g. time from–to) side by side */
+  .field > .grid2 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .factions {
+    flex-direction: column-reverse;
+  }
+  .factions .btn-ghost {
+    width: 100%;
+  }
+}
+/* very small: drop secondary band context, keep brand + who's on duty */
+@media (max-width: 600px) {
+  .band .ctx > .cell {
+    display: none;
+  }
+  .band .titlechip {
+    font-size: 12px;
+    padding: 6px 11px;
   }
 }
 
