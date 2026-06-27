@@ -351,6 +351,14 @@ a {
 .av-silhouette {
   background: radial-gradient(120% 120% at 50% 30%, #fff, var(--sand));
   border: 1px solid var(--line);
+  overflow: hidden;
+}
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
 }
 
 /* ================= LANDING ================= */

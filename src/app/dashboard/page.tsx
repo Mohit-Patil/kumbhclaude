@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Mark, Silhouette } from "@/components/brand";
+import { Mark } from "@/components/brand";
+import { Avatar } from "@/components/avatar";
 import { getDashboardData, type QueueItem, type MatchCard } from "@/lib/queries";
 import { verdictLabel } from "@/lib/ai/verdict";
 
@@ -22,7 +23,7 @@ function QCard({ kind, item }: { kind: "miss" | "found"; item: QueueItem }) {
   return (
     <div className={`qcard ${kind}`}>
       <div className="ph av-silhouette">
-        <Silhouette size={20} />
+        <Avatar url={item.photo} size={20} />
       </div>
       <div style={{ flex: 1 }}>
         <div className="nm">{item.name}</div>
@@ -51,7 +52,7 @@ function MatchBig({ m }: { m: MatchCard }) {
       <div className="pair">
         <div className="pp">
           <div className="ph av-silhouette">
-            <Silhouette size={28} />
+            <Avatar url={m.missingPhoto} size={28} />
           </div>
           <div className="nm">{m.missingName}</div>
           <div className="mt">
@@ -66,7 +67,7 @@ function MatchBig({ m }: { m: MatchCard }) {
         <MergeNode />
         <div className="pp">
           <div className="ph av-silhouette">
-            <Silhouette size={28} />
+            <Avatar url={m.foundPhoto} size={28} />
           </div>
           <div className="nm">{m.foundName}</div>
           <div className="mt">
