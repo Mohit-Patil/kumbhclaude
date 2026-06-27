@@ -2460,4 +2460,94 @@ button.addp:focus-visible {
   .reg-s-foot {
     padding: 10px 28px 44px;
   }
+
+/* ── Confirmation modal (report filed) ───────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(22, 48, 43, 0.45);
+  backdrop-filter: blur(3px);
+  animation: modal-fade 0.18s ease-out;
+}
+.modal-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-lg);
+  padding: 30px 28px 24px;
+  text-align: center;
+  animation: modal-pop 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.modal-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--teal);
+  box-shadow: 0 6px 18px rgba(14, 124, 107, 0.35);
+}
+.modal-title {
+  font-family: var(--font-display), serif;
+  font-size: 1.5rem;
+  color: var(--ink);
+  margin: 0 0 10px;
+}
+.modal-title .hi {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+.modal-body {
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  margin: 0 0 22px;
+}
+.modal-body strong {
+  color: var(--ink);
+}
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+.modal-link {
+  display: block;
+  margin: 14px auto 0;
+  background: none;
+  border: none;
+  color: var(--ink-faint);
+  font-size: 0.88rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.modal-link:hover {
+  color: var(--ink-soft);
+}
+.formerr {
+  margin: 4px 0 0;
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  background: var(--vermilion-tint);
+  border: 1px solid var(--vermilion);
+  color: var(--vermilion-deep);
+  font-size: 0.9rem;
+}
+@keyframes modal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modal-pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }

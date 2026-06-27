@@ -327,9 +327,14 @@ type MapFoundRow = {
 };
 
 /**
- * Open missing/found reports placed on the map via their booth's coordinates.
+ * Active missing/found reports placed on the map via their booth's coordinates.
+ * Includes both `open` and `matched` reports: a `matched` report only has a
+ * *proposed* candidate (not a confirmed reunion), so the person is still being
+ * searched for and belongs on the map. Only `reunited` reports drop off.
  * Reports whose booth has no location are omitted (the map can't plot them).
  */
+const ACTIVE_STATUSES = ["open", "matched"];
+
 export async function getMapReports(): Promise<{ missing: MapReport[]; found: MapReport[] }> {
   const [missingRes, foundRes] = await Promise.all([
     supabase
@@ -337,13 +342,13 @@ export async function getMapReports(): Promise<{ missing: MapReport[]; found: Ma
       .select(
         "missing_report_id,last_seen_to,created_at,booth:booth!missing_report_booth_id_fkey(code,zone,lat,lng),subject:person!missing_report_subject_person_id_fkey(full_name,age,age_range,description,photo(storage_ref))",
       )
-      .eq("status", "open"),
+      .in("status", ACTIVE_STATUSES),
     supabase
       .from("found_report")
       .select(
         "found_report_id,found_at,created_at,booth:booth!found_report_booth_id_fkey(code,zone,lat,lng),subject:person!found_report_subject_person_id_fkey(full_name,age,age_range,description,photo(storage_ref))",
       )
-      .eq("status", "open"),
+      .in("status", ACTIVE_STATUSES),
   ]);
 
   const missing = ((missingRes.data ?? []) as unknown as MapMissingRow[])
