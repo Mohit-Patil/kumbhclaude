@@ -1,0 +1,206 @@
+import { AgentBand, Silhouette } from "@/components/brand";
+
+function Pin({ color = "#D33A2C" }: { color?: string }) {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0116 0z" fill={color} />
+      <circle cx="12" cy="10" r="3" fill="#fff" />
+    </svg>
+  );
+}
+
+export default function ReportMissing() {
+  return (
+    <div className="agent">
+      <AgentBand title="Report missing" titleHi="गुमशुदा" />
+
+      <div className="work">
+        <div className="card formcard">
+          <div className="fhead">
+            <div>
+              <div className="eyebrow">Missing person report</div>
+              <h1 className="title">
+                Who has been separated?
+                <span className="hi">कौन बिछड़ा है?</span>
+              </h1>
+            </div>
+            <span className="chip missing">
+              <span className="dot" />
+              Active search
+            </span>
+          </div>
+
+          <div className="sec">
+            <div className="with-photo">
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <div className="field">
+                  <label>
+                    Name <span className="hi">नाम</span>
+                    <span className="req">*</span>
+                  </label>
+                  <input className="input" defaultValue="Aarti Yadav" />
+                </div>
+                <div className="grid2">
+                  <div className="field">
+                    <label>
+                      Age <span className="hi">उम्र</span>
+                    </label>
+                    <input className="input" defaultValue="7 years" />
+                  </div>
+                  <div className="field">
+                    <label>
+                      Gender <span className="hi">लिंग</span>
+                    </label>
+                    <input className="input" defaultValue="Girl" />
+                  </div>
+                </div>
+                <div className="field">
+                  <label>
+                    What were they wearing? <span className="hi">पहनावा</span>
+                    <span className="req">*</span>
+                  </label>
+                  <input
+                    className="input"
+                    defaultValue="Red frock, yellow hairband, silver anklets"
+                  />
+                </div>
+              </div>
+              <div className="field">
+                <label>
+                  Photo <span className="opt">If any</span>
+                </label>
+                <div className="shot photo-big">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8A9690" strokeWidth="1.9" aria-hidden>
+                    <rect x="3" y="6" width="18" height="13" rx="3" />
+                    <circle cx="12" cy="12.5" r="3.2" />
+                    <path d="M8 6l1.5-2h5L16 6" />
+                  </svg>
+                  <div className="lab">Take or<br />upload photo</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="sec bt">
+            <div className="eyebrow">Last seen</div>
+            <div className="grid2">
+              <div className="field">
+                <label>
+                  Between <span className="hi">समय</span>
+                </label>
+                <div className="grid2">
+                  <input className="input mono" defaultValue="13:30" />
+                  <input className="input mono" defaultValue="13:50" />
+                </div>
+                <span className="hint">Approximate window is fine.</span>
+              </div>
+              <div className="field">
+                <label>
+                  Where <span className="hi">स्थान</span>
+                </label>
+                <div className="map">
+                  <div className="pin">
+                    <Pin />
+                  </div>
+                  <span className="lbl">Akhara Marg, near Sector 8 gate</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="sec bt">
+            <div className="eyebrow">Reported by — parent / guardian</div>
+            <div className="grid3">
+              <div className="field">
+                <label>
+                  Name <span className="req">*</span>
+                </label>
+                <input className="input" defaultValue="Suresh Yadav" />
+              </div>
+              <div className="field">
+                <label>
+                  Mobile <span className="req">*</span>
+                </label>
+                <input className="input mono" defaultValue="+91 98270 …" />
+              </div>
+              <div className="field">
+                <label>Relation</label>
+                <input className="input" defaultValue="Father" />
+              </div>
+            </div>
+            <div className="secure">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M12 2l8 4v6c0 5-3.4 8.3-8 10-4.6-1.7-8-5-8-10V6l8-4z" fill="#0E7C6B" />
+                <path d="M9 12l2 2 4-4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              We&rsquo;ll call this number the moment a matching found-report comes in.
+            </div>
+          </div>
+
+          <div className="factions">
+            <button className="btn btn-danger grow btn-lg">
+              File missing report <span className="sub">सूचना दर्ज करें</span>
+            </button>
+            <button className="btn btn-ghost">Save draft</button>
+          </div>
+        </div>
+
+        <aside className="card panel">
+          <div className="ph2">
+            Possible matches <span className="hi">संभावित मिलान</span>
+          </div>
+          <p className="sub">
+            Found people who may be this child, ranked by similarity. Updates as you type.
+          </p>
+
+          <div className="match-card">
+            <div className="ph av-silhouette">
+              <Silhouette size={26} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div className="nm">Unidentified girl · ~7</div>
+              <div className="mt">Found at Sector 9 gate · 12 min ago · Booth K-21</div>
+              <div className="meter hi">
+                <i style={{ width: "88%" }} />
+              </div>
+              <div className="confline">
+                <span>Similarity</span>
+                <span className="pct hi">88% match</span>
+              </div>
+              <div className="methods">
+                <span className="mtag">Face</span>
+                <span className="mtag">Age range</span>
+                <span className="mtag">Clothing</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="match-card">
+            <div className="ph av-silhouette">
+              <Silhouette size={26} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div className="nm">Unidentified girl · 6–8</div>
+              <div className="mt">Found at Ram Ghat · 40 min ago · Booth K-07</div>
+              <div className="meter mid">
+                <i style={{ width: "61%" }} />
+              </div>
+              <div className="confline">
+                <span>Similarity</span>
+                <span className="pct mid">61% match</span>
+              </div>
+              <div className="methods">
+                <span className="mtag">Face</span>
+                <span className="mtag">Age range</span>
+              </div>
+            </div>
+          </div>
+
+          <a className="chip ghost" style={{ justifyContent: "center" }} href="/dashboard">
+            Open full match board →
+          </a>
+        </aside>
+      </div>
+    </div>
+  );
+}
