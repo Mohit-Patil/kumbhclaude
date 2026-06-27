@@ -36,7 +36,7 @@ function MatchBig({ m }: { m: MatchCard }) {
   const pct = Math.round(m.confidence * 100);
   const hi = m.confidence >= 0.8;
   const methodLabel =
-    m.method === "aadhaar" ? "Aadhaar match" : m.method === "phone" ? "Phone match" : "Face + attributes";
+    m.method === "aadhaar" ? "Aadhaar match" : m.method === "phone" ? "Phone match" : "Description + age";
   return (
     <div className="matchbig">
       <div className="pair">

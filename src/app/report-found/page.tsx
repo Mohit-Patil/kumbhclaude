@@ -156,7 +156,7 @@ export default async function ReportFound() {
           {matches.map((m) => {
             const pct = Math.round(m.confidence * 100);
             const hi = m.confidence >= 0.8;
-            const method = m.method === "aadhaar" ? "Aadhaar" : m.method === "phone" ? "Phone" : "Face";
+            const method = m.method === "aadhaar" ? "Aadhaar" : m.method === "phone" ? "Phone" : "Description";
             return (
               <div className="match-card" key={m.id}>
                 <div className="ph av-silhouette">
